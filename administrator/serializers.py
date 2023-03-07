@@ -18,12 +18,12 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ('id', 'fullName', 'email', 'phone', 'address', 'avatar', 'birthday', 'business', 'role', 'couponCount', 'createdAt', 'updatedAt', 'createdBy', 'updatedBy', 'password')
+        fields = ('id', 'fullName', 'email', 'phone', 'address', 'birthday', 'business', 'role', 'couponCount', 'password')
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'fullName', 'email', 'phone', 'address', 'avatar', 'birthday', 'business', 'role', 'couponCount', 'createdAt', 'updatedAt', 'createdBy', 'updatedBy', 'password')
+        fields = ('id', 'fullName', 'email', 'phone', 'address', 'birthday', 'business', 'role', 'couponCount', 'password')
 
 class LoginSerializer(serializers.ModelSerializer):
     token = serializers.SerializerMethodField()
@@ -39,7 +39,7 @@ class LoginSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('token', 'id', 'fullName', 'email', 'phone', 'address', 'avatar', 'birthday', 'businessId', 'couponCount', 'createdAt', 'updatedAt', 'createdBy', 'updatedBy', 'password', 'roleId')
+        fields = ('token', 'id', 'fullName', 'email', 'phone', 'address', 'birthday', 'businessId', 'couponCount', 'password', 'roleId')
 	
 class SignUpSerializer(serializers.ModelSerializer):
     token = serializers.SerializerMethodField()
