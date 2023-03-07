@@ -1,5 +1,5 @@
 from .base import *
-from decouple import config
+from decouple import config, Csv
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -8,7 +8,8 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default=[])
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv(), default=[])
+CORS_ORIGIN_ALLOW_ALL = True
 
 
 # Database
@@ -29,9 +30,6 @@ AUTH_PASSWORD_VALIDATORS = []
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
-
-
-CORS_ORIGIN_WHITELIST = []
 
 
 # Email configuration
