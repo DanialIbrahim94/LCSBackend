@@ -12,6 +12,13 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv(), default=[])
 CORS_ORIGIN_ALLOW_ALL = True
 
 
+# WooCommerce
+WOOCOMMERCE_URL = config('WOOCOMMERCE_URL')
+WOOCOMMERCE_CONSUMER_KEY = config('WOOCOMMERCE_CONSUMER_KEY')
+WOOCOMMERCE_CONSUMER_SECRET = config('WOOCOMMERCE_CONSUMER_SECRET')
+WOOCOMMERCE_VERSION = config('WOOCOMMERCE_VERSION', 'wc/v3')
+
+
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 

@@ -36,7 +36,7 @@ class Coupons(models.Model):
 	user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
 	def __str__(self):
-		return self.code
+		return str(self.code)
 
 class CouponHistory(models.Model):
 	fullName = models.CharField("Full Name", max_length=255)

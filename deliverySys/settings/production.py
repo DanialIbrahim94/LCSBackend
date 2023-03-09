@@ -10,6 +10,13 @@ DEBUG = os.environ.get('DEBUG').upper() == 'TRUE'
 ALLOWED_HOSTS = []
 
 
+# WooCommerce
+WOOCOMMERCE_URL = os.environ.get('WOOCOMMERCE_URL')
+WOOCOMMERCE_CONSUMER_KEY = os.environ.get('WOOCOMMERCE_CONSUMER_KEY')
+WOOCOMMERCE_CONSUMER_SECRET = os.environ.get('WOOCOMMERCE_CONSUMER_SECRET')
+WOOCOMMERCE_VERSION = os.environ.get('WOOCOMMERCE_VERSION')
+
+
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 

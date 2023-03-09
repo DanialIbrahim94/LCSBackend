@@ -37,5 +37,6 @@ urlpatterns = [
     re_path(r'^coupons/sendToBsUser/$', views.coupons_sendToBsUser),
     re_path(r'^coupons/sendToCustomer/$', views.coupons_sendToCustomer),
     re_path(r'^coupons/history/', views.coupons_history),
+    re_path(r'^coupons/request/', views.request_coupons),
     re_path(r'^email/message/', views.send_message),
 ]

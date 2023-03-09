@@ -1,15 +1,20 @@
 import os
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
-from rest_framework import status
+from email.mime.image import MIMEImage
+
+from django.conf import settings
 from django.utils.html import strip_tags
 from django.template.loader import render_to_string
 from django.core.mail import BadHeaderError, send_mail
-from email.mime.image import MIMEImage
 from django.core.mail import EmailMultiAlternatives
+
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from rest_framework import status
+
 from .models import User, Role, Business, Coupons, CouponHistory, DownHistory
 from .serializers import *
-from django.conf import settings
+from .apis import WooCommerceAPI
+
 
 @api_view(['POST'])
 def auth_login(request):
@@ -23,6 +28,7 @@ def auth_login(request):
             return Response({'data': serializer.data})
         return Response(status=status.HTTP_400_BAD_REQUEST, data="Password isn' t correctly.")
 
+
 @api_view(['POST'])
 def auth_signUp(request):
     if request.method == 'POST':
@@ -33,6 +39,7 @@ def auth_signUp(request):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(status=status.HTTP_400_BAD_REQUEST, data="Bad request.")
+
 
 @api_view(['POST'])
 def user_add(request):
@@ -83,10 +90,8 @@ def user_add(request):
                 if history_serializer.is_valid():
                     history_serializer.save()
             return Response(status=status.HTTP_201_CREATED)
-            print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-
 
 @api_view(['GET', 'POST'])
 def users_list(request):
@@ -116,6 +121,7 @@ def users_list(request):
         serializer = UserSerializer(users, context={'request': request}, many=True)
         return Response({'data': serializer.data})
     
+
 @api_view(['POST'])
 def users_download_select(request):
     if request.method == 'POST':
@@ -138,6 +144,7 @@ def users_download_select(request):
         serializer = UserSerializer(data, context={'request': request} ,many=True)
         return Response({'data': serializer.data})
     
+
 @api_view(['POST'])
 def users_download_save(request):
     if request.method == 'POST':
@@ -149,6 +156,7 @@ def users_download_save(request):
             if histrySerializer.is_valid():
                 histrySerializer.save()
         return Response(status=status.HTTP_201_CREATED)
+
     
 @api_view(['POST'])
 def users_downloadCount(request):
@@ -167,6 +175,7 @@ def users_downloadCount(request):
                 count = count + 1
         return Response({'downableCount': count})
                 
+
 @api_view(['GET', 'PUT', 'DELETE'])
 def users_detail(request, id):
     try:
@@ -189,6 +198,7 @@ def users_detail(request, id):
         data.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
+
 @api_view(['GET', 'POST'])
 def roles_list(request):
     if request.method == 'GET':
@@ -205,6 +215,7 @@ def roles_list(request):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+
 @api_view(['PUT', 'DELETE'])
 def roles_edit(request, id):
     try:
@@ -223,6 +234,7 @@ def roles_edit(request, id):
         data.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
+
 @api_view(['GET', 'POST'])
 def businesses_list(request):
     if request.method == 'GET':
@@ -239,6 +251,7 @@ def businesses_list(request):
             return Response({'data': serializer.data})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+
 @api_view(['PUT', 'DELETE'])
 def businesses_edit(request, id):
     try:
@@ -255,6 +268,7 @@ def businesses_edit(request, id):
     elif request.method == 'DELETE':
         data.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 @api_view(['POST'])
 def coupon_add(request, id):
@@ -273,6 +287,7 @@ def coupon_add(request, id):
         codeSerializer = CouponSerializer(data, context={'request': request}, many=True)
         return Response({'data': codeSerializer.data, 'same_code': same_code, "success_code": success_code})
     
+
 @api_view(['GET', 'POST'])
 def coupons_list(request, id):
     if request.method == 'GET':
@@ -285,12 +300,14 @@ def coupons_list(request, id):
         serializer = CouponSerializer(couponSome,context={'request': request} ,many=True)
         return Response({'data': serializer.data})
     
+
 @api_view(['GET'])
 def coupons_count(request, id):
     if request.method == 'GET':
         count = Coupons.objects.all().filter(user_id=id).count()
         return Response({'count': count})
     
+
 @api_view(['POST'])
 def coupons_sendToBsUser(request):
     if request.method == 'POST':
@@ -314,6 +331,7 @@ def coupons_sendToBsUser(request):
             history_serializer.save()
         return Response({'data': serializer.data})
 
+
 @api_view(['GET'])
 def coupons_history(request):
     if request.method == 'GET':
@@ -321,6 +339,7 @@ def coupons_history(request):
         serializer = CouponHistorySerializer(coupons,context={'request': request} ,many=True)
         return Response({'data': serializer.data})
     
+
 @api_view(['POST'])
 def send_message(request):
     if request.method == 'POST':
@@ -337,6 +356,7 @@ def send_message(request):
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
     
+
 @api_view(['POST'])
 def coupons_sendToCustomer(request):
     if request.method == 'POST':
@@ -373,3 +393,37 @@ def coupons_sendToCustomer(request):
         if history_serializer.is_valid():
             history_serializer.save()
         return Response(status=status.HTTP_201_CREATED)
+
+
+
+@api_view(['POST'])
+def request_coupons(request):
+    user_id = request.data.get('user_id')
+    user = None
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(data={'message': "You don't have permission!"}, status=status.HTTP_400_BAD_REQUEST)
+
+    amount = request.data.get('amount')
+    if amount < 1:
+        return Response(data={'message': "Amount of coupons to be created must be valid!"}, status=status.HTTP_400_BAD_REQUEST)
+
+    api = WooCommerceAPI()
+    coupons_list = []
+    page = 1
+    while amount > 0:
+        print(len(coupons_list), amount, page)
+        coupons = api.get_all(params={'per_page': 100 if amount > 100 else amount, 'page': page})
+        coupons_list += coupons
+
+        # Break the loop if there no more coupons to get
+        if len(coupons) < 100:
+            break
+
+        page += 1
+        amount -= 100
+
+    coupons_object = Coupons.objects.bulk_create(map(lambda code: Coupons(code=code, user=user), coupons_list))
+
+    return Response(status=status.HTTP_201_CREATED)
