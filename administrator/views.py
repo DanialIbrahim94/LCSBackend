@@ -325,7 +325,7 @@ def coupons_sendToBsUser(request):
         message = 'You have just received ' + str(sendCount) + ' Coupons from ' + sendBy_email
         email_from = sendBy_email
         recipient_list = [sendTo_email]
-        send_mail( subject, message, email_from, recipient_list )
+        send_mail(subject, message, email_from, recipient_list)
         history_serializer = CouponHistorySerializer(data=request.data.get("history"))
         if history_serializer.is_valid():
             history_serializer.save()

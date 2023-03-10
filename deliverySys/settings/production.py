@@ -17,6 +17,9 @@ WOOCOMMERCE_CONSUMER_SECRET = os.environ.get('WOOCOMMERCE_CONSUMER_SECRET')
 WOOCOMMERCE_VERSION = os.environ.get('WOOCOMMERCE_VERSION')
 
 
+# Coupons
+MINIMUM_COUPONS_AMOUNT = 40
+
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 

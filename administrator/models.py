@@ -1,4 +1,7 @@
+from django.utils import timezone
+
 from django.db import models
+
 
 class Role(models.Model):
 	roleType = models.CharField("Type of Role", max_length=255)
@@ -6,12 +9,14 @@ class Role(models.Model):
 	def __str__(self):
 		return self.roleType
 
+
 class Business(models.Model):
 	businessType = models.CharField("Type of Business", max_length=255)
 
 	def __str__(self):
 		return self.businessType
-	
+
+
 class User(models.Model):
 	fullName = models.CharField("Full Name", max_length=255)
 	email = models.EmailField()
@@ -22,6 +27,7 @@ class User(models.Model):
 	createdAt = models.DateTimeField("Created At", auto_now_add=True)
 	updatedAt = models.DateTimeField("Updated At", auto_now=True)
 	password = models.CharField("Password", max_length=255)
+	last_recharge_request = models.DateTimeField(default=None, blank=True, null=True)
 	role = models.ForeignKey(Role, on_delete=models.CASCADE, null=True)
 	business = models.ForeignKey(Business, on_delete=models.CASCADE, null=True)
 	
@@ -30,6 +36,14 @@ class User(models.Model):
 	
 	def serialize(self):
 		return self.__dict__
+
+	def get_last_recharge_request_in_days(self):
+		if not self.last_recharge_request:
+			return -1
+		
+		delta = timezone.now() - self.last_recharge_request
+		return delta.days
+
 	
 class Coupons(models.Model):
 	code = models.CharField("Coupon Code", max_length=255)
@@ -37,6 +51,10 @@ class Coupons(models.Model):
 
 	def __str__(self):
 		return str(self.code)
+
+	def get_quantity(self):
+		return Coupons.objects.filter(user=self.user).count()
+
 
 class CouponHistory(models.Model):
 	fullName = models.CharField("Full Name", max_length=255)
@@ -47,6 +65,7 @@ class CouponHistory(models.Model):
 
 	def __str__(self):
 		return self.email
+
 	
 class DownHistory(models.Model):
 	from_user = models.IntegerField("from_user id", null=True)

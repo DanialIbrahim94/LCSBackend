@@ -19,6 +19,10 @@ WOOCOMMERCE_CONSUMER_SECRET = config('WOOCOMMERCE_CONSUMER_SECRET')
 WOOCOMMERCE_VERSION = config('WOOCOMMERCE_VERSION', 'wc/v3')
 
 
+# Coupons
+MINIMUM_COUPONS_AMOUNT = 40
+SEND_RECHARGE_REQUEST_COOLDOWN = 15 # in days
+
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
