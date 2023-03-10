@@ -1,6 +1,10 @@
+from django.conf import settings
+
 from rest_framework import serializers
 from rest_framework_jwt.settings import api_settings
+
 from .models import User, Role, Business, Coupons, CouponHistory, DownHistory
+
 
 class RoleSerializer(serializers.ModelSerializer):
 	class Meta:
@@ -15,10 +19,18 @@ class BusinessSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     business = BusinessSerializer(required=True)
     role = RoleSerializer(required=True)
-    
+    coupons_amount = serializers.SerializerMethodField()
+    coupons_minimum_amount = serializers.SerializerMethodField()
+
+    def get_coupons_amount(self, obj):
+        return Coupons.objects.filter(user=obj).count()
+
+    def get_coupons_minimum_amount(self, obj):
+        return settings.MINIMUM_COUPONS_AMOUNT
+
     class Meta:
         model = User
-        fields = ('id', 'fullName', 'email', 'phone', 'address', 'birthday', 'business', 'role', 'couponCount', 'password')
+        fields = ('id', 'fullName', 'email', 'phone', 'address', 'birthday', 'business', 'role', 'couponCount', 'password', 'coupons_amount', 'coupons_minimum_amount')
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
