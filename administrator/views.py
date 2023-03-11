@@ -395,7 +395,6 @@ def coupons_sendToCustomer(request):
         return Response(status=status.HTTP_201_CREATED)
 
 
-
 @api_view(['POST'])
 def request_coupons(request):
     user_id = request.data.get('user_id')
@@ -410,20 +409,17 @@ def request_coupons(request):
         return Response(data={'message': "Amount of coupons to be created must be valid!"}, status=status.HTTP_400_BAD_REQUEST)
 
     api = WooCommerceAPI()
-    coupons_list = []
-    page = 1
-    while amount > 0:
-        print(len(coupons_list), amount, page)
-        coupons = api.get_all(params={'per_page': 100 if amount > 100 else amount, 'page': page})
-        coupons_list += coupons
 
-        # Break the loop if there no more coupons to get
-        if len(coupons) < 100:
-            break
+    # Place an order
+    order = api.order(user, amount)
+    print(order.ok)
+    if order.ok:
+        print(order.json()['payment_url'])
+        # Return the payment link
+        data = {
+            'payment_url': order.json()['payment_url']
+        }
 
-        page += 1
-        amount -= 100
+        return Response(data=data, status=status.HTTP_200_OK)
 
-    coupons_object = Coupons.objects.bulk_create(map(lambda code: Coupons(code=code, user=user), coupons_list))
-
-    return Response(status=status.HTTP_201_CREATED)
+    return Response(data={'message': order.reason}, status=status.HTTP_400_BAD_REQUEST)

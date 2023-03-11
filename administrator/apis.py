@@ -15,26 +15,37 @@ class WooCommerceAPI():
 			wp_api = True
 		)
 
-	def batch(self, data, params={}):
-		response = self.api.post('coupons/batch', data, params=params).json()
+	def post(self, request, data, params={}):
+		response = self.api.post(request, data, params=params)
 		return response
 
-	def post(self, data, params={}):
-		response = self.api.post('coupons/', data, params=params).json()
-		return response
+	def order(self, user, amount):
+		first_name, *last_name = user.fullName.split(' ')
+		print(settings.WOOCOMMERCE_PRODUCT_VARIATIONS.get(amount))
+		data = {
+			"payment_method": settings.WOOCOMMERCE_PAYMENT_METHOD,
+			"payment_method_title": settings.WOOCOMMERCE_PAYMENT_METHOD_TITLE,
+			"set_paid": False,
+			"billing": {
+				"first_name": first_name,
+				"last_name": last_name[-1] if last_name else '',
+				"address_1": user.address,
+				"address_2": "",
+				"city": "",
+				"state": "",
+				"postcode": "",
+				"country": "",
+				"email": user.email,
+				"phone": user.phone
+			},
+			"line_items": [
+				{
+					"product_id": settings.WOOCOMMERCE_PRODUCT_ID,
+					"variation_id": settings.WOOCOMMERCE_PRODUCT_VARIATIONS.get(amount),
+					"quantity": 1
+				}
+			],
+		}
 
-	def get(self, id, params={}):
-		response = self.api.get(f'coupons/{id}', params=params).json()
-		return response
-
-	def get_all(self, params={}):
-		response = self.api.get('coupons', params=params).json()
-		return response
-
-	def put(self, id, data, params={}):
-		response = self.api.put(f'coupons/{id}', data, params=params).json()
-		return response
-
-	def delete(self, id, params={}):
-		response = self.api.delete(f'coupons/{id}', params=params).json()
+		response = self.post('orders', data)
 		return response
