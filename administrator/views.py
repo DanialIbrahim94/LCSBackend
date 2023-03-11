@@ -414,7 +414,8 @@ def request_coupons(request):
     order = api.order(user, amount)
     print(order.ok)
     if order.ok:
-        print(order.json()['payment_url'])
+        # TODO: save order to DB until it is completed!
+
         # Return the payment link
         data = {
             'payment_url': order.json()['payment_url']
@@ -423,3 +424,22 @@ def request_coupons(request):
         return Response(data=data, status=status.HTTP_200_OK)
 
     return Response(data={'message': order.reason}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def user_orders(request, user_id):
+    user = None
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(data={'message': "You don't have permission!"}, status=status.HTTP_400_BAD_REQUEST)
+
+    api = WooCommerceAPI()
+
+    # Place an order
+    orders = api.get_orders(user.email)
+    data = {
+        'data': orders
+    }
+
+    return Response(data=data, status=status.HTTP_200_OK)

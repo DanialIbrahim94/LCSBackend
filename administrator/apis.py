@@ -15,13 +15,26 @@ class WooCommerceAPI():
 			wp_api = True
 		)
 
+	def get(self, request, params={}):
+		response = self.api.get(request, params=params)
+		return response
+
 	def post(self, request, data, params={}):
 		response = self.api.post(request, data, params=params)
 		return response
 
+	def get_orders(self, email):
+		response = self.get('orders').json()
+		filtered_orders = []
+		while response:
+			order = response.pop(0)
+			if order and order['billing']['email'] == email:
+				filtered_orders.append(order)
+
+		return filtered_orders
+
 	def order(self, user, amount):
 		first_name, *last_name = user.fullName.split(' ')
-		print(settings.WOOCOMMERCE_PRODUCT_VARIATIONS.get(amount))
 		data = {
 			"payment_method": settings.WOOCOMMERCE_PAYMENT_METHOD,
 			"payment_method_title": settings.WOOCOMMERCE_PAYMENT_METHOD_TITLE,
