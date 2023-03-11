@@ -39,5 +39,6 @@ urlpatterns = [
     re_path(r'^coupons/history/', views.coupons_history),
     re_path(r'^coupons/request/', views.request_coupons),
     re_path(r'^orders/(?P<user_id>[0-9]+)$', views.user_orders),
+    path('orders/<int:order_id>/verify/', views.verify_order),
     re_path(r'^email/message/', views.send_message),
 ]

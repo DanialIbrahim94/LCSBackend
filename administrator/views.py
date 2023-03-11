@@ -444,3 +444,17 @@ def user_orders(request, user_id):
     }
 
     return Response(data=data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def verify_order(request, order_id):
+    api = WooCommerceAPI()
+
+    # Verify the order
+    is_completed, data = api.verify_order(order_id)
+    if is_completed:
+        # release the coupons
+
+        return Response(data=data, status=status.HTTP_200_OK)
+
+    return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
