@@ -36,13 +36,42 @@ class WooCommerceAPI():
 
 		return filtered_orders
 
+	def get_customer(self, user):
+		email = user.email
+		customer = None
+		response = self.get('customers')
+
+		if response.ok:
+			customers = response.json()
+			while customers:
+				_customer = customers.pop()
+				if _customer.get('email') == email:
+					customer = _customer
+					break
+
+		return customer
+
+
 	def order(self, user, amount):
 		first_name, *last_name = user.fullName.split(' ')
 		data = {
 			"payment_method": settings.WOOCOMMERCE_PAYMENT_METHOD,
 			"payment_method_title": settings.WOOCOMMERCE_PAYMENT_METHOD_TITLE,
 			"set_paid": False,
-			"billing": {
+			"line_items": [
+				{
+					"product_id": settings.WOOCOMMERCE_PRODUCT_ID,
+					"variation_id": settings.WOOCOMMERCE_PRODUCT_VARIATIONS.get(amount),
+					"quantity": 1
+				}
+			],
+		}
+		customer = self.get_customer(user)
+		print(customer)
+		if customer and customer.get('id'):
+			data["customer_id"] = customer.get('id')
+		else:
+			data["billing"] = {
 				"first_name": first_name,
 				"last_name": last_name[-1] if last_name else '',
 				"address_1": user.address,
@@ -54,14 +83,7 @@ class WooCommerceAPI():
 				"email": user.email,
 				"phone": user.phone
 			},
-			"line_items": [
-				{
-					"product_id": settings.WOOCOMMERCE_PRODUCT_ID,
-					"variation_id": settings.WOOCOMMERCE_PRODUCT_VARIATIONS.get(amount),
-					"quantity": 1
-				}
-			],
-		}
+		print(data)
 
 		response = self.post('orders', data)
 		return response
