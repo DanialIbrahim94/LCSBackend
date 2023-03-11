@@ -75,6 +75,9 @@ class WooCommerceAPI():
 		if order.ok:
 			_order = order.json()
 			status = _order['status']
+			if status != 'completed':
+				return False, {'message': 'The order has not been paid for yet.'}
+
 			user_email = _order['billing']['email']
 			wc_variations = settings.WOOCOMMERCE_PRODUCT_VARIATIONS
 			amount = list(wc_variations.keys())[list(wc_variations.values()).index(_order['line_items'][0]['variation_id'])]
