@@ -12,6 +12,8 @@ from administrator.options import request_coupons_recharge
 @receiver(post_save, sender=Coupons)
 def check_coupons_threshold(sender, instance, **kwargs):
 	user = instance.user
+	if not user: # bulk coupon
+		return
 	if not user.role or user.role.id != 3:
 		print('Not a business user')
 		return

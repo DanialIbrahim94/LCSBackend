@@ -279,6 +279,7 @@ def coupon_add(request, id):
             if Coupons.objects.filter(code=i.get("code")).exists():
                 same_code = same_code + 1
             else:
+                i['used'] = True
                 success_code = success_code + 1
                 serializer = CouponSerializer(data=i)
                 if serializer.is_valid():

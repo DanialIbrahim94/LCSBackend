@@ -48,6 +48,11 @@ class User(models.Model):
 class Coupons(models.Model):
 	code = models.CharField("Coupon Code", max_length=255)
 	user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+	used = models.BooleanField(default=False)
+
+	class Meta:
+		verbose_name = "Coupons"
+		verbose_name_plural = "Coupons"
 
 	def __str__(self):
 		return str(self.code)
