@@ -413,7 +413,6 @@ def request_coupons(request):
 
     # Place an order
     order = api.order(user, amount)
-    print(order.ok)
     if order.ok:
         # TODO: save order to DB until it is completed!
 

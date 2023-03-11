@@ -67,7 +67,6 @@ class WooCommerceAPI():
 			],
 		}
 		customer = self.get_customer(user)
-		print(customer)
 		if customer and customer.get('id'):
 			data["customer_id"] = customer.get('id')
 		else:
@@ -83,7 +82,6 @@ class WooCommerceAPI():
 				"email": user.email,
 				"phone": user.phone
 			},
-		print(data)
 
 		response = self.post('orders', data)
 		return response
@@ -104,7 +102,6 @@ class WooCommerceAPI():
 			wc_variations = settings.WOOCOMMERCE_PRODUCT_VARIATIONS
 			amount = list(wc_variations.keys())[list(wc_variations.values()).index(_order['line_items'][0]['variation_id'])]
 
-			print(status, user_email, amount)
 			qs = User.objects.filter(email=user_email)
 			if qs.exists():
 				user = qs.first()

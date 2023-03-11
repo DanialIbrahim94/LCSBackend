@@ -15,7 +15,6 @@ def check_coupons_threshold(sender, instance, **kwargs):
 	if not user: # bulk coupon
 		return
 	if not user.role or user.role.id != 3:
-		print('Not a business user')
 		return
 	quantity = instance.get_quantity()
 	
@@ -23,7 +22,6 @@ def check_coupons_threshold(sender, instance, **kwargs):
 		last_recharge = user.get_last_recharge_request_in_days()
 
 		if last_recharge == -1 or last_recharge >= settings.SEND_RECHARGE_REQUEST_COOLDOWN:
-			print('Requesting new recharge..')
 			succeeded = request_coupons_recharge(user)
 
 			if succeeded:
