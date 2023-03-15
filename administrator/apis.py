@@ -17,23 +17,9 @@ class WooCommerceAPI():
 			wp_api = True
 		)
 
-	def get(self, request, params={}, paginator=False):
-		if paginator:
-			response = []
-			page = 1
-			params['per_page'] = 100
-
-			while True:
-				print(str(page) + ' | ' + str(len(response)))
-				params['page'] = page
-				temp = self.api.get(request, params=params).json()
-				if not temp:
-					break
-				response += temp
-				page += 1
-			return response
-		else:
-			return self.api.get(request, params=params)
+	def get(self, request, params={}):
+		response = self.api.get(request, params=params)
+		return response
 
 	def post(self, request, data, params={}):
 		response = self.api.post(request, data, params=params)
@@ -41,7 +27,7 @@ class WooCommerceAPI():
 
 	def get_orders(self, email):
 		completed_orders_qs = CompletedOrders.objects.all().values_list('order_id', flat=True)
-		response = self.get('orders', paginator=True)
+		response = self.get('orders', params={'search': email}).json()
 		filtered_orders = []
 		while response:
 			order = response.pop(0)
@@ -53,13 +39,15 @@ class WooCommerceAPI():
 	def get_customer(self, user):
 		email = user.email
 		customer = None
-		customers = self.get('customers', paginator=True)
+		response = self.get('customers', params={'search': email})
 
-		while customers:
-			_customer = customers.pop()
-			if _customer.get('email') == email:
-				customer = _customer
-				break
+		if response.ok:
+			customers = response.json()
+			while customers:
+				_customer = customers.pop()
+				if _customer.get('email') == email:
+					customer = _customer
+					break
 
 		return customer
 
