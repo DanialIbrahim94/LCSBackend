@@ -344,11 +344,31 @@ def coupons_sendToBsUser(request):
 
         data = Coupons.objects.filter(user_id = sendBy_id)
         serializer = CouponSerializer(data,context={'request': request} ,many=True)
+
         subject = 'Successfully!'
-        message = 'You have just received ' + str(sendCount) + ' Coupons from ' + sendBy_email
+        text_content = f'''
+Hi {user_qs.first().fullName},
+You’ve just been assigned {sendCount} Coupon codes!
+Feel free to reach out to us if you have any questions at https://datacapturepro.com/contact
+Regards,
+Team Data Capture Pro
+        '''
+        html_content = f'''
+Hi {user_qs.first().fullName},
+<p>
+You’ve just been assigned {sendCount} Coupon codes!
+<br />
+Feel free to reach out to us if you have any questions at https://datacapturepro.com/contact
+</p>
+Regards,<br />
+Team Data Capture Pro
+        '''
         email_from = sendBy_email
         recipient_list = [sendTo_email]
-        send_mail(subject, message, email_from, recipient_list)
+        msg = EmailMultiAlternatives(subject, text_content, email_from, recipient_list)
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+
         history_serializer = CouponHistorySerializer(data=request.data.get("history"))
         if history_serializer.is_valid():
             history_serializer.save()
@@ -387,36 +407,43 @@ def coupons_sendToCustomer(request):
         sendTo_email = request.data.get("sendTo_email")
         sendBy_email = request.data.get("sendBy_email")
         send_code = request.data.get("send_code")
-        html_message = render_to_string('emailtemplate.html', {'context': 'values'})
-        html_message = html_message.replace("[Coupon Code]", "[" + send_code + "]")
+
         subject = 'You have just received a coupon.'
-        msg = EmailMultiAlternatives(
-            subject,
-            html_message,
-            from_email=sendBy_email,
-            to=[sendTo_email]
-        )
-        msg.mixed_subtype = 'related'
-        msg.attach_alternative(html_message, "text/html")
+        text_content = f'''
+Congrats!
 
-        ## Disable this code for the following reason(s):
-        # code throwing 'FileNotFoundError: [Errno 2] No such file or directory' error
-        # Static folder and images are missing from this project
+Here Is A Unique Coupon Code To Access Up To $100 In GUARANTEED Travel Savings BELOW Prices On 1 Million Worldwide Hotels And Thousands Of 5-Star Resorts Listed On Expedia, Priceline, And Others.
+Coupon Code: {send_code}
+Follow the steps below to redeem your coupon code:
+Step 1: Visit https://mytravelplanet.com and click on “Redeem Code”
+Step 2: Follow the Instructions On The Page and Fill Out The Form.
+Step 3: Enjoy Your Free Code!
+For any questions, feel free to reach out to us at https://mytravelplanet.com/contact
 
-        # img_dir = settings.STATIC_ROOT
-        # images = ['_icon.png', 'bee.png', 'line.png', 'logo-mtp-new.png', 'LOGO_labor_1.png', 'qr-code_3.png']
-        # for item in images:
-        #     file_path = os.path.join(img_dir, item)
-        #     with open(file_path, 'rb') as f:
-        #         img = MIMEImage(f.read())
-        #         img.add_header('Content-ID', '<{name}>'.format(name=item))
-        #         img.add_header('Content-Disposition', 'inline', filename=item)
-        #         msg.attach(img)
+        '''
+        html_content = f'''
+Congrats!
+<br />
+<br />
+Here Is A Unique Coupon Code To Access Up To $100 In GUARANTEED Travel Savings BELOW Prices On 1 Million Worldwide Hotels And Thousands Of 5-Star Resorts Listed On Expedia, Priceline, And Others.
+<br />
+<b>Coupon Code:</b> {send_code}
+<p>
+Follow the steps below to redeem your coupon code:
+<br />
+<b>Step 1:</b> Visit https://mytravelplanet.com and click on “Redeem Code”
+<br />
+<b>Step 2:</b> Follow the Instructions On The Page and Fill Out The Form.
+<br />
+<b>Step 3:</b> Enjoy Your Free Code!
+</p>
+For any questions, feel free to reach out to us at https://mytravelplanet.com/contact
 
-        try: 
-            msg.send(fail_silently=False)
-        except BadHeaderError:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        '''
+        msg = EmailMultiAlternatives(subject,text_content,from_email=sendBy_email,to=[sendTo_email])
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+
         Coupons.objects.get(code=send_code, user_id=sendBy_id).delete()
         history_serializer = CouponHistorySerializer(data=request.data.get("history"))
         if history_serializer.is_valid():
