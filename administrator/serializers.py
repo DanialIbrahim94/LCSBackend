@@ -80,7 +80,7 @@ class SignUpSerializer(serializers.ModelSerializer):
 class CouponSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Coupons
-		fields = ('id', 'code', 'user', 'used')
+		fields = ('id', 'code', 'user')
                 
 class CouponHistorySerializer(serializers.ModelSerializer):
 	class Meta:

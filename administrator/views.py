@@ -6,6 +6,7 @@ from django.utils.html import strip_tags
 from django.template.loader import render_to_string
 from django.core.mail import BadHeaderError, send_mail
 from django.core.mail import EmailMultiAlternatives
+from django.db import IntegrityError
 
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -288,15 +289,18 @@ def coupon_add(request, id):
     if request.method == 'POST':
         same_code = 0
         success_code = 0
-        for i in request.data:
-            if Coupons.objects.filter(code=i.get("code")).exists():
-                same_code = same_code + 1
-            else:
-                i['used'] = True
-                success_code = success_code + 1
-                serializer = CouponSerializer(data=i)
+        for code in request.data:
+            try:
+                serializer = CouponSerializer(data=code)
                 if serializer.is_valid():
                     serializer.save()
+                    success_code = success_code + 1
+                else:
+                    raise IntegrityError('Not valid')
+            except IntegrityError as e:
+                print(e)
+                same_code = same_code + 1
+
         data = Coupons.objects.all().filter(user_id=id)
         codeSerializer = CouponSerializer(data, context={'request': request}, many=True)
         return Response({'data': codeSerializer.data, 'same_code': same_code, "success_code": success_code})

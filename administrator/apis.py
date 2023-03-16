@@ -104,12 +104,13 @@ class WooCommerceAPI():
 			qs = User.objects.filter(email=user_email)
 			if qs.exists():
 				user = qs.first()
-				bulk_coupons = Coupons.objects.filter(used=False)
+				admin_user = User.objects.first()
+				bulk_coupons = Coupons.objects.filter(user=admin_user)
 				if bulk_coupons.count() < amount:
 					return False, {'message': 'All coupons have been claimed. Please contact the administrators.'}
 
 				coupons_ids = bulk_coupons.values_list('pk', flat=True)[:amount]
-				Coupons.objects.filter(pk__in=coupons_ids).update(used=True, user=user)
+				Coupons.objects.filter(pk__in=coupons_ids).update(user=user)
 
 				CompletedOrders(order_id=order_id).save()
 				return True, {'is_valid': True}

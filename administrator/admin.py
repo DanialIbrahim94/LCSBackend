@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.core.validators import FileExtensionValidator
 from django.contrib.auth import get_user_model
 
-from administrator.models import Coupons
+from administrator.models import Coupons, User
 
 
 class CustomFooForm(forms.ModelForm):
@@ -22,29 +22,30 @@ class CustomFooForm(forms.ModelForm):
 	def save(self, commit=True):
 		# Call the superclass's save method to create the model instance
 		instance = super().save(commit=False)
-
+		user = User.objects.first()
 		# Add custom logic here to modify the instance as needed
 		bulk_coupons = self.cleaned_data['bulk_coupons']  # Example
 		reader = csv.reader(bulk_coupons.read().decode('utf-8').splitlines())
-
+		created_coupons = []
 		for index, row in enumerate(reader):
 			coupon_code = row[0]
 			if index == 0:
-				instance = Coupons(code=coupon_code, used=False)
+				instance = Coupons(code=coupon_code, user=user)
 				continue
 
 			# Create a Coupons instance for each row in the file
-			coupon = Coupons(code=coupon_code, used=False)
-			coupon.save()
+			coupon, created = Coupons.objects.get_or_create(code=coupon_code, user=user)
+			created_coupons.append(coupon)
 
-		return instance
+		return created_coupons[0]
 
 
 @admin.register(Coupons)
 class CouponsAdmin(admin.ModelAdmin):
-	list_display = ('code', )
+	list_display = ('code', 'user')
 	form = CustomFooForm
 
 	def get_queryset(self, request):
 		qs = super().get_queryset(request)
-		return qs.filter(used=False)
+		user = User.objects.first()
+		return qs.filter(user=user)
