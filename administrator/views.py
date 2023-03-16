@@ -19,13 +19,20 @@ from .apis import WooCommerceAPI
 @api_view(['POST'])
 def auth_login(request):
     if request.method == 'POST':
+        data = None
         try:
-            data = User.objects.get(email = request.data.get('email'))
+            data_qs = User.objects.filter(email__icontains=request.data.get('email').lower())
+            if data_qs.exists():
+                data = data_qs.first()
+            else:
+                Response(status=status.HTTP_400_BAD_REQUEST, data="This email doesn' t exist.")
         except User.DoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST, data="This email doesn' t exist.")
         serializer = UserSerializer(data, context={'request': request})
+
         if request.data.get('password') == serializer.data.get('password'):
             return Response({'data': serializer.data})
+
         return Response(status=status.HTTP_400_BAD_REQUEST, data="Password isn' t correctly.")
 
 
