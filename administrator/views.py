@@ -133,7 +133,10 @@ def users_download_select(request):
         if business:
             downUsers = downUsers.filter(business_id = business)
         if role:
-            downUsers = downUsers.filter(role_id__gte=role)
+            if role == 3:
+                downUsers = downUsers.filter(role_id__gt=role)
+            else:
+                downUsers = downUsers.filter(role_id__gte=role)
         data = []
         index = 0
         for i in downUsers:
@@ -168,7 +171,10 @@ def users_downloadCount(request):
         if business:
             downUsers = downUsers.filter(business_id = business)
         if role:
-            downUsers = downUsers.filter(role_id__gte=role)
+            if role == 3:
+                downUsers = downUsers.filter(role_id__gt=role)
+            else:
+                downUsers = downUsers.filter(role_id__gte=role)
         count = 0
         for i in downUsers:
             if not DownHistory.objects.filter(from_user=from_user_id).filter(down_user=i.id).exists():
