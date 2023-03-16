@@ -317,8 +317,14 @@ def coupons_sendToBsUser(request):
         sendBy_id = request.data.get("sendBy_id")
         sendBy_email = request.data.get("sendBy_email")
         sendCount = int(request.data.get("sendCount"))
-        send_coupons = Coupons.objects.filter(user_id = sendBy_id).values_list('id', flat=True)[:sendCount]
-        Coupons.objects.filter(id__in=send_coupons).update(user_id=sendTo_id)
+        user_qs = User.objects.filter(id=sendTo_id)
+        if user_qs.exists():
+            for send_coupon in Coupons.objects.filter(user_id = sendBy_id)[:sendCount]:
+                send_coupon.user = user_qs.first()
+                send_coupon.save()
+        else:
+            return Response({'message': 'Can\'t send coupon(s) to user'}, status=serializer.HTTP_400_BAD_REQUEST)
+
         data = Coupons.objects.filter(user_id = sendBy_id)
         serializer = CouponSerializer(data,context={'request': request} ,many=True)
         subject = 'Successfully!'
