@@ -317,9 +317,8 @@ def coupons_sendToBsUser(request):
         sendBy_id = request.data.get("sendBy_id")
         sendBy_email = request.data.get("sendBy_email")
         sendCount = int(request.data.get("sendCount"))
-        send_coupons = Coupons.objects.filter(user_id = sendBy_id)[:sendCount]
-        for i in range(sendCount):
-            Coupons.objects.filter(id=send_coupons[i].id).update(user_id=sendTo_id)
+        send_coupons = Coupons.objects.filter(user_id = sendBy_id).values_list('id', flat=True)[:sendCount]
+        Coupons.objects.filter(id__in=send_coupons).update(user_id=sendTo_id)
         data = Coupons.objects.filter(user_id = sendBy_id)
         serializer = CouponSerializer(data,context={'request': request} ,many=True)
         subject = 'Successfully!'
