@@ -16,8 +16,6 @@ Step 2: Select your desired quantity, and you will be redirected to our site to 
 
 Step 3: Fill out your payment details, the quantity will already be preselected and check out.
 
-Step 4: Come back to your dashboard and 
-
 Regards,
 Team Data Capture Pro
 		'''
@@ -31,8 +29,6 @@ You’re running low on your coupon balance! We’d hate for you to run out of c
 <b>Step 2:</b> Select your desired quantity, and you will be redirected to our site to complete the purchase.
 <br />
 <b>Step 3:</b> Fill out your payment details, the quantity will already be preselected and check out.
-<br />
-<b>Step 4:</b> Come back to your dashboard and verify the payment
 
 <p>
 Regards,<br />
