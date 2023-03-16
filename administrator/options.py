@@ -5,7 +5,7 @@ from django.conf import settings
 
 def request_coupons_recharge(user):
 	try:
-		subject = 'Coupons Recharge Request'
+		subject = 'Data Capture Pro - You\'re Running Low On Your Coupon Balance.'
 		text_content = f'''
 Hi {user.fullName},
 You’re running low on your coupon balance! We’d hate for you to run out of coupons when your customer expects one. Please login to your dashboard to recharge your coupon inventory. Your coupons will be generated within 2 minutes.

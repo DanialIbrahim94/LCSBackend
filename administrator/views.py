@@ -345,7 +345,7 @@ def coupons_sendToBsUser(request):
         data = Coupons.objects.filter(user_id = sendBy_id)
         serializer = CouponSerializer(data,context={'request': request} ,many=True)
 
-        subject = 'Successfully!'
+        subject = 'Data Capture Pro - You\'ve Just Been Assigned Coupon Codes!'
         text_content = f'''
 Hi {user_qs.first().fullName},
 You’ve just been assigned {sendCount} Coupon codes!
@@ -408,7 +408,7 @@ def coupons_sendToCustomer(request):
         sendBy_email = request.data.get("sendBy_email")
         send_code = request.data.get("send_code")
 
-        subject = 'You have just received a coupon.'
+        subject = 'Congratulations On Receiving A Free $100 Coupon Code!'
         text_content = f'''
 Congrats!
 
