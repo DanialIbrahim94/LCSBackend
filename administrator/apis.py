@@ -65,12 +65,7 @@ class WooCommerceAPI():
 					"quantity": 1
 				}
 			],
-		}
-		customer = self.get_customer(user)
-		if customer and customer.get('id'):
-			data["customer_id"] = customer.get('id')
-		else:
-			data["billing"] = {
+			"billing": {
 				"first_name": first_name,
 				"last_name": last_name[-1] if last_name else '',
 				"address_1": user.address,
@@ -82,6 +77,10 @@ class WooCommerceAPI():
 				"email": user.email,
 				"phone": user.phone
 			},
+		}
+		customer = self.get_customer(user)
+		if customer and customer.get('id'):
+			data["customer_id"] = customer.get('id')
 
 		response = self.post('orders', data)
 		return response
