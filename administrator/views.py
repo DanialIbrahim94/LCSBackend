@@ -376,15 +376,21 @@ def coupons_sendToCustomer(request):
         )
         msg.mixed_subtype = 'related'
         msg.attach_alternative(html_message, "text/html")
-        img_dir = settings.STATIC_ROOT
-        images = ['_icon.png', 'bee.png', 'line.png', 'logo-mtp-new.png', 'LOGO_labor_1.png', 'qr-code_3.png']
-        for item in images:
-            file_path = os.path.join(img_dir, item)
-            with open(file_path, 'rb') as f:
-                img = MIMEImage(f.read())
-                img.add_header('Content-ID', '<{name}>'.format(name=item))
-                img.add_header('Content-Disposition', 'inline', filename=item)
-                msg.attach(img)
+
+        ## Disable this code for the following reason(s):
+        # code throwing 'FileNotFoundError: [Errno 2] No such file or directory' error
+        # Static folder and images are missing from this project
+
+        # img_dir = settings.STATIC_ROOT
+        # images = ['_icon.png', 'bee.png', 'line.png', 'logo-mtp-new.png', 'LOGO_labor_1.png', 'qr-code_3.png']
+        # for item in images:
+        #     file_path = os.path.join(img_dir, item)
+        #     with open(file_path, 'rb') as f:
+        #         img = MIMEImage(f.read())
+        #         img.add_header('Content-ID', '<{name}>'.format(name=item))
+        #         img.add_header('Content-Disposition', 'inline', filename=item)
+        #         msg.attach(img)
+
         try: 
             msg.send(fail_silently=False)
         except BadHeaderError:
