@@ -70,9 +70,8 @@ Coupon Code: {send_code}
 Follow the steps below to redeem your coupon code:
 Step 1: Visit https://mytravelplanet.com and click on “Redeem Code”
 Step 2: Follow the Instructions On The Page and Fill Out The Form.
-Step 3: Enjoy Your Free Code!
+Step 3: Enjoy Your Hotel Savings!
 For any questions, feel free to reach out to us at https://mytravelplanet.com/contact
-
         '''
                 html_content = f'''
 Congrats!
@@ -80,7 +79,7 @@ Congrats!
 <br />
 Here Is A Unique Coupon Code To Access Up To $100 In GUARANTEED Travel Savings BELOW Prices On 1 Million Worldwide Hotels And Thousands Of 5-Star Resorts Listed On Expedia, Priceline, And Others.
 <br />
-<b>Coupon Code:</b> {send_code}
+<span style="font-size: 30px;color: red;">Coupon Code: <b style="color: blue;">{send_code}</b></span>
 <p>
 Follow the steps below to redeem your coupon code:
 <br />
@@ -88,10 +87,9 @@ Follow the steps below to redeem your coupon code:
 <br />
 <b>Step 2:</b> Follow the Instructions On The Page and Fill Out The Form.
 <br />
-<b>Step 3:</b> Enjoy Your Free Code!
+<b>Step 3:</b> Enjoy Your Hotel Savings!
 </p>
 For any questions, feel free to reach out to us at https://mytravelplanet.com/contact
-
         '''
                 msg = EmailMultiAlternatives(subject,text_content,from_email='lcs@datacapturepro.com',to=[sendTo_email])
                 msg.attach_alternative(html_content, "text/html")
@@ -420,9 +418,8 @@ Coupon Code: {send_code}
 Follow the steps below to redeem your coupon code:
 Step 1: Visit https://mytravelplanet.com and click on “Redeem Code”
 Step 2: Follow the Instructions On The Page and Fill Out The Form.
-Step 3: Enjoy Your Free Code!
+Step 3: Enjoy Your Hotel Savings!
 For any questions, feel free to reach out to us at https://mytravelplanet.com/contact
-
         '''
         html_content = f'''
 Congrats!
@@ -430,7 +427,7 @@ Congrats!
 <br />
 Here Is A Unique Coupon Code To Access Up To $100 In GUARANTEED Travel Savings BELOW Prices On 1 Million Worldwide Hotels And Thousands Of 5-Star Resorts Listed On Expedia, Priceline, And Others.
 <br />
-<b>Coupon Code:</b> {send_code}
+<span style="font-size: 30px;color: red;">Coupon Code: <b style="color: blue;">{send_code}</b></span>
 <p>
 Follow the steps below to redeem your coupon code:
 <br />
@@ -438,10 +435,9 @@ Follow the steps below to redeem your coupon code:
 <br />
 <b>Step 2:</b> Follow the Instructions On The Page and Fill Out The Form.
 <br />
-<b>Step 3:</b> Enjoy Your Free Code!
+<b>Step 3:</b> Enjoy Your Hotel Savings!
 </p>
 For any questions, feel free to reach out to us at https://mytravelplanet.com/contact
-
         '''
         msg = EmailMultiAlternatives(subject,text_content,from_email='lcs@datacapturepro.com',to=[sendTo_email])
         msg.attach_alternative(html_content, "text/html")
