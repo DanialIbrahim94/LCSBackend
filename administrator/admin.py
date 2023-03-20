@@ -34,7 +34,10 @@ class CustomFooForm(forms.ModelForm):
 				continue
 
 			# Create a Coupons instance for each row in the file
-			coupon, created = Coupons.objects.get_or_create(code=coupon_code, user=user)
+			coupon, created = Coupons.objects.get_or_create(code=coupon_code)
+			if created:
+				coupon.user = user
+				coupon.save()
 			created_coupons.append(coupon)
 
 		return created_coupons[0]

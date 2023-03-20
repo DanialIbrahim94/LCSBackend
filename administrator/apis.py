@@ -2,7 +2,7 @@ from woocommerce import API
 
 from django.conf import settings
 
-from administrator.models import User, Coupons, CompletedOrders
+from administrator.models import User, Coupons
 
 
 class WooCommerceAPI():
@@ -26,12 +26,11 @@ class WooCommerceAPI():
 		return response
 
 	def get_orders(self, email):
-		completed_orders_qs = CompletedOrders.objects.all().values_list('order_id', flat=True)
 		response = self.get('orders', params={'search': email}).json()
 		filtered_orders = []
 		while response:
 			order = response.pop(0)
-			if order and order['billing']['email'] == email and order.get('id', '') not in completed_orders_qs:
+			if order and order['billing']['email'] == email and order.get('status') != 'completed':
 				filtered_orders.append(order)
 
 		return filtered_orders
@@ -85,16 +84,19 @@ class WooCommerceAPI():
 		response = self.post('orders', data)
 		return response
 
+	def set_order_status(self, order_id, status):
+		return self.api.put(f'orders/{order_id}', {'status': status}).ok
+
 	def verify_order(self, order_id):
-		completed_orders_qs = CompletedOrders.objects.filter(order_id=order_id)
-		if completed_orders_qs.exists():
-			return False, {'message': 'Order already processed!'}
 
 		order = self.get(f'orders/{order_id}')
 		if order.ok:
 			_order = order.json()
 			status = _order['status']
-			if status != 'completed':
+			if status == 'completed':
+				return False, {'message': 'Order already processed!'}
+
+			if status != 'processing':
 				return False, {'message': 'The order has not been paid for yet.'}
 
 			user_email = _order['billing']['email']
@@ -109,10 +111,18 @@ class WooCommerceAPI():
 				if bulk_coupons.count() < amount:
 					return False, {'message': 'All coupons have been claimed. Please contact the administrators.'}
 
+				is_ok = self.set_order_status(order_id, 'completed')
+				if not is_ok:
+					return False, {
+						'message': '''
+							Couldn\'t automatically complete the order thus we are not releasing the codes.\n
+							Please contact the administrators of this site
+						'''
+					}
+
 				coupons_ids = bulk_coupons.values_list('pk', flat=True)[:amount]
 				Coupons.objects.filter(pk__in=coupons_ids).update(user=user)
 
-				CompletedOrders(order_id=order_id).save()
 				return True, {'is_valid': True}
 			else:
 				pass

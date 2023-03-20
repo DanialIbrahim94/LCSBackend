@@ -74,10 +74,3 @@ class CouponHistory(models.Model):
 class DownHistory(models.Model):
 	from_user = models.IntegerField("from_user id", null=True)
 	down_user = models.IntegerField("down_user id", null=True)
-
-
-class CompletedOrders(models.Model):
-	order_id = models.IntegerField("Order's id")
-
-	def __str__(self):
-		return self.order_id
