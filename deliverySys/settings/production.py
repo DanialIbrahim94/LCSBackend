@@ -1,5 +1,7 @@
-from .base import *
+import logging
 from decouple import config, Csv
+
+from .base import *
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -31,6 +33,7 @@ WOOCOMMERCE_PRODUCT_VARIATIONS = {
 
 # Coupons
 MINIMUM_COUPONS_AMOUNT = 40
+SEND_RECHARGE_REQUEST_COOLDOWN = 15 # in days
 
 
 # Database
@@ -87,4 +90,28 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer'
     ]
+}
+
+
+# Logging
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': '/home/ubuntu/access.log',
+            'level': 'INFO',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+        },
+    },
 }
