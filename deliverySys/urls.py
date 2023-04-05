@@ -15,7 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, re_path
+from django.conf import path, settings
+from django.conf.urls.static import static
+
 from administrator import views
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -41,4 +45,4 @@ urlpatterns = [
     re_path(r'^orders/(?P<user_id>[0-9]+)$', views.user_orders),
     path('orders/<int:order_id>/verify/', views.verify_order),
     re_path(r'^email/message/', views.send_message),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

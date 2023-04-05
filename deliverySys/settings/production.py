@@ -68,6 +68,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
 CORS_ORIGIN_WHITELIST = []
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # Email configuration
