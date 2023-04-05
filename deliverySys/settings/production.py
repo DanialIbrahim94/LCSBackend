@@ -68,6 +68,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
 CORS_ORIGIN_WHITELIST = ['https://www.getcustomerdata.com']
+CSRF_TRUSTED_ORIGINS = ['https://api.getcustomerdata.com']
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
