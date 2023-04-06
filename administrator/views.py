@@ -92,7 +92,7 @@ Follow the steps below to redeem your coupon code:
 </p>
 For any questions, feel free to reach out to us at https://mytravelplanet.com/contact
         '''
-                msg = EmailMultiAlternatives(subject,text_content,from_email='lcs@datacapturepro.com',to=[sendTo_email])
+                msg = EmailMultiAlternatives(subject, text_content, from_email=settings.EMAIL_HOST_USER, to=[sendTo_email])
                 msg.attach_alternative(html_content, "text/html")
                 msg.send()
                 Coupons.objects.get(code=send_code, user_id=sendBy_id).delete()
@@ -347,27 +347,27 @@ def coupons_sendToBsUser(request):
         data = Coupons.objects.filter(user_id = sendBy_id)
         serializer = CouponSerializer(data,context={'request': request} ,many=True)
 
-        subject = 'Data Capture Pro - You\'ve Just Been Assigned Coupon Codes!'
+        subject = 'Data Capture Pros - You\'ve Just Been Assigned Coupon Codes!'
         text_content = f'''
 Hi {user_qs.first().fullName},
 You’ve just been assigned {sendCount} Coupon codes!
-Feel free to reach out to us if you have any questions at https://datacapturepro.com/contact
+Feel free to reach out to us if you have any questions at https://datacapturepros.com/contact
 Regards,
-Team Data Capture Pro
+Team Data Capture Pros
         '''
         html_content = f'''
 Hi {user_qs.first().fullName},
 <p>
 You’ve just been assigned {sendCount} Coupon codes!
 <br />
-Feel free to reach out to us if you have any questions at https://datacapturepro.com/contact
+Feel free to reach out to us if you have any questions at https://datacapturepros.com/contact
 </p>
 Regards,<br />
-Team Data Capture Pro
+Team Data Capture Pros
         '''
         email_from = sendBy_email
         recipient_list = [sendTo_email]
-        msg = EmailMultiAlternatives(subject, text_content, 'lcs@datacapturepro.com', recipient_list)
+        msg = EmailMultiAlternatives(subject, text_content, settings.EMAIL_HOST_USER, recipient_list)
         msg.attach_alternative(html_content, "text/html")
         msg.send()
 
@@ -394,7 +394,7 @@ def send_message(request):
         recipient_list = request.data.get("recipient_list")
         if from_email and recipient_list:
             try: 
-                send_mail(subject=subject, message=message, from_email='lcs@datacapturepro.com', recipient_list=recipient_list)
+                send_mail(subject=subject, message=message, from_email=settings.EMAIL_HOST_USER, recipient_list=recipient_list)
             except BadHeaderError:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             return Response(status=status.HTTP_201_CREATED)
@@ -441,7 +441,7 @@ Follow the steps below to redeem your coupon code:
 </p>
 For any questions, feel free to reach out to us at https://mytravelplanet.com/contact
         '''
-        msg = EmailMultiAlternatives(subject,text_content,from_email='lcs@datacapturepro.com',to=[sendTo_email])
+        msg = EmailMultiAlternatives(subject,text_content,from_email=settings.EMAIL_HOST_USER,to=[sendTo_email])
         msg.attach_alternative(html_content, "text/html")
         msg.send()
 
