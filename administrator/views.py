@@ -79,7 +79,7 @@ Regards,
 Team DCP
                 '''
                 html_content = f'''
-Hi {sendTo_email},
+Hi {sendTo_fullName},
 <p>
 Your account has been created on DCP’s Lead Capture System. To begin capturing customer data and distributing hotel saving plans, please log into your private dashboard using the credentials mentioned below:
 <br />
