@@ -1,3 +1,5 @@
+import datetime
+
 from django.utils import timezone
 
 from django.contrib.auth.models import User
@@ -16,7 +18,18 @@ def check_coupons_threshold(sender, instance, **kwargs):
 		return
 	if not user.role or user.role.id != 3:
 		return
-	quantity = instance.get_quantity()
+
+	quantity = user.get_quantity()
+	# This means that the account is freshly created and
+	# must get assigned some coupons before start tracking it
+	if user.get_last_recharge_request_in_days() == -1 and quantity < settings.MINIMUM_COUPONS_AMOUNT:
+		return
+
+	# To exist the forever loop
+	if quantity >= settings.MINIMUM_COUPONS_AMOUNT:
+		user.last_recharge_request = timezone.make_aware(datetime.date(2015, 1, 1))
+		user.save()
+		return
 	
 	if quantity < settings.MINIMUM_COUPONS_AMOUNT:
 		last_recharge = user.get_last_recharge_request_in_days()

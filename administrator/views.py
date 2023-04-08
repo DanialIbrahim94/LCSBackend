@@ -49,57 +49,56 @@ def auth_signUp(request):
 
 @api_view(['POST'])
 def user_add(request):
+    print('doing this now')
     if request.method == 'POST':
         if User.objects.filter(email=request.data.get('email')).exists():
             return Response(status=status.HTTP_400_BAD_REQUEST)
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            sendBy_email = request.data.get("sendBy_email")
-            if sendBy_email:
-                sendBy_id = request.data.get("sendBy_id")
-                sendTo_email = request.data.get("sendTo_email")
-                send_code = request.data.get("send_code")
+            sendTo_email = request.data.get("email")
+            print(request.data)
+            if sendTo_email:
+                sendTo_fullName = request.data.get("fullName")
+                sendTo_password = request.data.get("password")
+                print(sendTo_email, sendTo_password)
 
-                subject = 'Congratulations On Receiving A Free $100 Coupon Code!'
+                subject = 'Data Capture Pros - Account has been created on DCP’s Lead Capture System.'
                 text_content = f'''
-Congrats!
+Hi {sendTo_fullName},
 
-Here Is A Unique Coupon Code To Access Up To $100 In GUARANTEED Travel Savings BELOW Prices On 1 Million Worldwide Hotels And Thousands Of 5-Star Resorts Listed On Expedia, Priceline, And Others.
-Coupon Code: {send_code}
-Follow the steps below to redeem your coupon code:
-Step 1: Visit https://mytravelplanet.com and click on “Redeem Code”
-Step 2: Follow the Instructions On The Page and Fill Out The Form.
-Step 3: Enjoy Your Hotel Savings!
-For any questions, feel free to reach out to us at https://mytravelplanet.com/contact
-        '''
+Your account has been created on DCP’s Lead Capture System. To begin capturing customer data and distributing hotel saving plans, please log into your private dashboard using the credentials mentioned below:
+
+Login URL: https://getcustomerdata.com
+Username: {sendTo_email}
+Password: {sendTo_password}
+
+If you haven’t been assigned any saving plans yet, please send an email at support@datacapturepros.com and we will get back to you as soon as possible.
+
+Regards,
+Team DCP
+                '''
                 html_content = f'''
-Congrats!
-<br />
-<br />
-Here Is A Unique Coupon Code To Access Up To $100 In GUARANTEED Travel Savings BELOW Prices On 1 Million Worldwide Hotels And Thousands Of 5-Star Resorts Listed On Expedia, Priceline, And Others.
-<br />
-<br />
-<span style="font-size: 17px;color: red;">Coupon Code: <b style="color: blue;">{send_code}</b></span>
+Hi {sendTo_email},
 <p>
-Follow the steps below to redeem your coupon code:
+Your account has been created on DCP’s Lead Capture System. To begin capturing customer data and distributing hotel saving plans, please log into your private dashboard using the credentials mentioned below:
 <br />
-<b>Step 1:</b> Visit https://mytravelplanet.com and click on “Redeem Code”
+<b>Login URL:</b> <a href="https://getcustomerdata.com">https://getcustomerdata.com</a>
 <br />
-<b>Step 2:</b> Follow the Instructions On The Page and Fill Out The Form.
+<b>Username:</b> {sendTo_email}
 <br />
-<b>Step 3:</b> Enjoy Your Hotel Savings!
+<b>Password:</b> {sendTo_password}
 </p>
-For any questions, feel free to reach out to us at https://mytravelplanet.com/contact
-        '''
-                msg = EmailMultiAlternatives(subject, text_content, from_email=settings.EMAIL_HOST_USER, to=[sendTo_email])
+Regards,<br />
+Team Data Capture Pros
+                '''
+                print(text_content)
+                recipient_list = [sendTo_email]
+                msg = EmailMultiAlternatives(subject, text_content, settings.EMAIL_HOST_USER, recipient_list)
                 msg.attach_alternative(html_content, "text/html")
                 msg.send()
-                Coupons.objects.get(code=send_code, user_id=sendBy_id).delete()
-                history_serializer = CouponHistorySerializer(data=request.data.get("history"))
-                if history_serializer.is_valid():
-                    history_serializer.save()
             return Response(status=status.HTTP_201_CREATED)
+        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
