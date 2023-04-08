@@ -19,7 +19,7 @@ def check_coupons_threshold(sender, instance, **kwargs):
 	if not user.role or user.role.id != 3:
 		return
 
-	quantity = user.get_quantity()
+	quantity = instance.get_quantity()
 	# This means that the account is freshly created and
 	# must get assigned some coupons before start tracking it
 	if user.get_last_recharge_request_in_days() == -1 and quantity < settings.MINIMUM_COUPONS_AMOUNT:
