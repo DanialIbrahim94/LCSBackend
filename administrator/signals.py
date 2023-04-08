@@ -27,7 +27,7 @@ def check_coupons_threshold(sender, instance, **kwargs):
 
 	# To exist the forever loop
 	if quantity >= settings.MINIMUM_COUPONS_AMOUNT:
-		user.last_recharge_request = timezone.make_aware(datetime.date(2015, 1, 1))
+		user.last_recharge_request = timezone.make_aware(datetime.datetime(2015, 1, 1, 0, 0, 0))
 		user.save()
 		return
 	
