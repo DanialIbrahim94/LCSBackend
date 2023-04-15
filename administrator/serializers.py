@@ -30,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'fullName', 'email', 'phone', 'address', 'birthday', 'business', 'role', 'couponCount', 'password', 'coupons_amount', 'coupons_minimum_amount')
+        fields = ('id', 'fullName', 'email', 'phone', 'address', 'birthday', 'business', 'role', 'couponCount', 'password', 'coupons_amount', 'coupons_minimum_amount', 'jotform_id')
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:

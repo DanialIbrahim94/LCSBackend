@@ -516,6 +516,21 @@ def verify_order(request, order_id):
 
 @api_view(['POST'])
 def create_jotform(request):
+    user_id = request.data.get('user_id')
+    user = None
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(data={'message': "Hey, you don't have permission to do that!"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if user.jotform_id:
+        return Response(
+            data={
+                'message': "Sorry, you have already created a form. You can only create one form per account."
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     api = JotformAPI()
     data = request.data
     name = data['formName']
@@ -524,10 +539,34 @@ def create_jotform(request):
     response, ok = api.create_form(name, description, elements)
 
     if ok:
+        form_id = response['id']
+        form_url = response['url']
+        user.jotform_id = form_id
+        user.save()
+
         res_data = {
             'message': 'Form created successfully!',
-            'form_link': response['url']
+            'form_url': form_url,
+            'form_id': form_id,
         }
         return Response(res_data, status=status.HTTP_201_CREATED)
 
     return Response({'message': "Failed to create the form!"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def get_submissions(request, user_id):
+    user = None
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(data={'message': "Hey, you don't have permission to do that!"}, status=status.HTTP_400_BAD_REQUEST)
+
+    form_id = user.jotform_id
+    api = JotformAPI()
+
+    submissions, ok = api.get_submissions(form_id)
+    if ok:
+        return Response({'submissions': submissions}, status=status.HTTP_200_OK)
+
+    return Response({'message': "Failed retrieve submissions!"}, status=status.HTTP_400_BAD_REQUEST)

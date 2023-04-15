@@ -30,6 +30,7 @@ class User(models.Model):
 	last_recharge_request = models.DateTimeField(default=None, blank=True, null=True)
 	role = models.ForeignKey(Role, on_delete=models.CASCADE, null=True)
 	business = models.ForeignKey(Business, on_delete=models.CASCADE, null=True)
+	jotform_id = models.TextField(max_length=30, null=True, default=True)
 	
 	def __str__(self):
 		return self.email

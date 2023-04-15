@@ -155,7 +155,22 @@ class JotformAPI():
 
 		print(form)
 
-		response = self.api.create_form(form)
+		# for now, the API will keep trying until the form is finally created
+		max_retries = 15
+		retries = 0
+		while retries <= max_retries:
+			retries += 1
+			try:
+				response = self.api.create_form(form)
+				# do something with response
+				break  # break out of the loop if no exception is raised
+			except Exception as e:
+				# handle the error
+				print(f"Error creating form: {e}")
+		
+		# the form was not created
+		if retries > max_retries:
+			return None, False
 
 		form_id = response['id']
 		properties = json.dumps({
@@ -167,3 +182,10 @@ class JotformAPI():
 
 		return response, True
 
+	def get_submissions(self, form_id):
+		try:
+			response = self.api.get_form_submissions(form_id)
+			return response, True
+		except Exception as e:
+			print(e)
+			return None, False
