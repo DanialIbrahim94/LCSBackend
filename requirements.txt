@@ -6,6 +6,7 @@ django-cors-headers==3.13.0
 djangorestframework==3.14.0
 djangorestframework-jwt==1.11.0
 idna==3.4
+jotform @ git+https://github.com/jotform/jotform-api-python.git@050e92db72c315496e335be4959307e6a7043ed2
 psycopg2==2.9.5
 PyJWT==1.7.1
 python-decouple==3.8
