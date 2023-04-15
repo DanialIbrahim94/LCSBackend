@@ -30,6 +30,10 @@ WOOCOMMERCE_PRODUCT_VARIATIONS = {
 }
 
 
+# JOTFORM API
+JOTFORM_API_KEY = config('JOTFORM_API_KEY')
+
+
 # Coupons
 MINIMUM_COUPONS_AMOUNT = config('MINIMUM_COUPONS_AMOUNT', cast=int, default=50)
 SEND_RECHARGE_REQUEST_COOLDOWN = 15 # in days
@@ -56,10 +60,4 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Email configuration
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'adds.lcs.server@gmail.com'
-EMAIL_HOST_PASSWORD = 'fimshohmujrxosyg'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

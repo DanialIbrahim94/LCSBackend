@@ -12,7 +12,7 @@ from rest_framework import status
 
 from .models import User, Role, Business, Coupons, CouponHistory, DownHistory
 from .serializers import *
-from .apis import WooCommerceAPI
+from .apis import WooCommerceAPI, JotformAPI
 
 
 @api_view(['POST'])
@@ -512,3 +512,22 @@ def verify_order(request, order_id):
         return Response(data=data, status=status.HTTP_200_OK)
 
     return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def create_jotform(request):
+    api = JotformAPI()
+    data = request.data
+    name = data['formName']
+    description = data['formDescription']
+    elements = data['formElements']
+    response, ok = api.create_form(name, description, elements)
+
+    if ok:
+        res_data = {
+            'message': 'Form created successfully!',
+            'form_link': response['url']
+        }
+        return Response(res_data, status=status.HTTP_201_CREATED)
+
+    return Response({'message': "Failed to create the form!"}, status=status.HTTP_400_BAD_REQUEST)

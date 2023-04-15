@@ -1,4 +1,7 @@
+import json
+
 from woocommerce import API
+from jotform import JotformAPIClient
 
 from django.conf import settings
 
@@ -128,3 +131,39 @@ class WooCommerceAPI():
 				pass
 
 		return False
+
+
+class JotformAPI():
+	api = None
+	def __init__(self):
+		self.api = JotformAPIClient(settings.JOTFORM_API_KEY)
+
+	def create_form(self, name, description, elements, form_type='card'):
+		questions = {}
+
+		for index, value in enumerate(elements):
+			questions[str(index+1)] = value
+
+		form = {
+			'questions': questions,
+			'properties': {
+				'title': name,
+				'description': description,
+				'theme': form_type,
+			},
+		}
+
+		print(form)
+
+		response = self.api.create_form(form)
+
+		form_id = response['id']
+		properties = json.dumps({
+			'properties': {
+				'formType': 'cardForm'
+			}
+		})
+		r = self.api.set_multiple_form_properties(form_id, properties)
+
+		return response, True
+
