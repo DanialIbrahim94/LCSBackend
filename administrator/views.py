@@ -534,9 +534,9 @@ def create_jotform(request):
     api = JotformAPI()
     data = request.data
     name = data['formName']
-    description = data['formDescription']
     elements = data['formElements']
-    response, ok = api.create_form(name, description, elements)
+    print(elements)
+    response, ok = api.create_form(name, elements)
 
     if ok:
         form_id = response['id']

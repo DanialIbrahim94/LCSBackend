@@ -138,17 +138,18 @@ class JotformAPI():
 	def __init__(self):
 		self.api = JotformAPIClient(settings.JOTFORM_API_KEY)
 
-	def create_form(self, name, description, elements, form_type='card'):
+	def create_form(self, name, elements, form_type='card'):
 		questions = {}
 
 		for index, value in enumerate(elements):
+			if value.get('required'):
+				value['required'] = 'Yes' if value['required'] else 'No'
 			questions[str(index+1)] = value
 
 		form = {
 			'questions': questions,
 			'properties': {
 				'title': name,
-				'description': description,
 				'theme': form_type,
 			},
 		}
