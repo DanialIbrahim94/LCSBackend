@@ -1,10 +1,12 @@
 import os
+import csv
 from email.mime.image import MIMEImage
 
 from django.conf import settings
 from django.core.mail import BadHeaderError, send_mail
 from django.core.mail import EmailMultiAlternatives
 from django.db import IntegrityError
+from django.http import HttpResponse
 
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -568,5 +570,48 @@ def get_submissions(request, user_id):
     submissions, ok = api.get_submissions(form_id)
     if ok:
         return Response({'submissions': submissions}, status=status.HTTP_200_OK)
+
+    return Response({'message': "Failed retrieve submissions!"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def download_submissions(request, user_id):
+    user = None
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(data={'message': "Hey, you don't have permission to do that!"}, status=status.HTTP_400_BAD_REQUEST)
+
+    form_id = user.jotform_id
+    api = JotformAPI()
+
+    submissions, ok = api.get_submissions(form_id)
+    print(submissions)
+
+    if ok:
+        # Define the output file name
+        filename = 'submissions.csv'
+
+        # Extract the header row from the first submissions item
+        header = list(submissions[0]['answers'].values())
+        header = [item['text'] for item in header]
+
+        # Extract the submissions rows from all submissions items
+        rows = []
+        for item in submissions:
+            row = list(item['answers'].values())
+            row = [item.get('answer', '') for item in row]
+            rows.append(row)
+
+        # Create a CSV response object with appropriate headers
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+        # Write the submissions to the response
+        writer = csv.writer(response)
+        writer.writerow(header)
+        writer.writerows(rows)
+
+        return response
 
     return Response({'message': "Failed retrieve submissions!"}, status=status.HTTP_400_BAD_REQUEST)
