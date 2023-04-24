@@ -1,4 +1,5 @@
 import json
+import time
 
 from woocommerce import API
 from jotform import JotformAPIClient
@@ -157,14 +158,21 @@ class JotformAPI():
 		print(form)
 
 		# for now, the API will keep trying until the form is finally created
+		failed_form_ids = []
 		max_retries = 15
 		retries = 0
 		while retries <= max_retries:
 			retries += 1
 			try:
 				response = self.api.create_form(form)
-				# do something with response
-				break  # break out of the loop if no exception is raised
+				# Now make sure that all the questions are saved
+				form_id = response['id']
+				created_questions = self.api.get_form_questions(form_id)
+				print(len(created_questions), len(questions))
+				if created_questions and len(created_questions) == len(questions):
+					break  # break out of the loop if no exception is raised
+				else:
+					failed_form_ids.append(form_id)
 			except Exception as e:
 				# handle the error
 				print(f"Error creating form: {e}")
@@ -172,7 +180,14 @@ class JotformAPI():
 		# the form was not created
 		if retries > max_retries:
 			return None, False
+		try:
+			for failed_form_id in failed_form_ids:
+				res = self.api.delete_form(failed_form_id)
+				print(res)
+		except Exception as e:
+			print('Error', e)
 
+		# Change form type to the modern type: Card form
 		form_id = response['id']
 		properties = json.dumps({
 			'properties': {
