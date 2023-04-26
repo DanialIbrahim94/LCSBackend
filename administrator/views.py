@@ -556,6 +556,65 @@ def create_jotform(request):
     return Response({'message': "Failed to create the form!"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['PUT'])
+def update_jotform(request, user_id):
+    user = None
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(data={'message': "Hey, you don't have permission to do that!"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not user.jotform_id:
+        return Response(
+            data={
+                'message': "Sorry, You should create a form first."
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    api = JotformAPI()
+    data = request.data
+    name = data['formName']
+    elements = data['formElements']
+    response, ok = api.update_form(name, elements, user.jotform_id)
+
+    if ok:
+        form_url = response['url']
+        res_data = {
+            'message': 'Form updated successfully!',
+            'form_url': form_url,
+            'form_id': jotform_id,
+        }
+        return Response(res_data, status=status.HTTP_200_OK)
+
+    return Response({'message': "Failed to update the form!"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def get_jotform(request, user_id):
+    user = None
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(data={'message': "Hey, you don't have permission to do that!"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not user.jotform_id:
+        return Response(
+            data={
+                'message': "Sorry, You should create a form first."
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    api = JotformAPI()
+    response, ok = api.get_form_data(user.jotform_id)
+
+    if ok:
+        return Response({'form': response}, status=status.HTTP_200_OK)
+
+    return Response({'message': 'Form not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+
 @api_view(['GET'])
 def get_submissions(request, user_id):
     user = None

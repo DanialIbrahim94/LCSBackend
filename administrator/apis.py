@@ -198,6 +198,28 @@ class JotformAPI():
 
 		return response, True
 
+	def update_form(self, name, elements, form_id):
+		# get the existing form
+		form = self.api.get_form(form_id)
+		if not form:
+			return None, False
+		
+		# update the form with the new name and elements
+		questions = {}
+		for index, value in enumerate(elements):
+			if value.get('required'):
+				value['required'] = 'Yes' if value['required'] else 'No'
+			questions[str(index+1)] = value
+		form['questions'] = questions
+		form['title'] = name
+		
+		# update the form
+		response = self.api.update_form(form_id, form)
+		if not response:
+			return None, False
+		
+		return response, True
+
 	def get_submissions(self, form_id):
 		try:
 			response = self.api.get_form_submissions(form_id)
@@ -205,3 +227,15 @@ class JotformAPI():
 		except Exception as e:
 			print(e)
 			return None, False
+
+	def get_form_data(self, form_id):
+		form = self.api.get_form(form_id)
+		print(form)
+		form_questions = self.api.get_form_questions(form_id)
+		print(form_questions)
+		form_data = {
+			'id': form_id,
+			'name': form['title'],
+			'questions': form_questions,
+		}
+		return form_data, True
