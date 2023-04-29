@@ -518,6 +518,7 @@ def verify_order(request, order_id):
 
 @api_view(['POST'])
 def create_jotform(request):
+    print(request.data)
     user_id = request.data.get('user_id')
     user = None
     try:
@@ -537,8 +538,9 @@ def create_jotform(request):
     data = request.data
     name = data['formName']
     elements = data['formElements']
-    print(elements)
-    response, ok = api.create_form(name, elements)
+    welcome = data['welcomePage']
+    print(welcome)
+    response, ok = api.create_form(name, elements, welcome)
 
     if ok:
         form_id = response['id']
@@ -579,11 +581,8 @@ def update_jotform(request, user_id):
     response, ok = api.update_form(name, elements, user.jotform_id)
 
     if ok:
-        form_url = response['url']
         res_data = {
-            'message': 'Form updated successfully!',
-            'form_url': form_url,
-            'form_id': jotform_id,
+            'message': 'Form updated successfully!'
         }
         return Response(res_data, status=status.HTTP_200_OK)
 

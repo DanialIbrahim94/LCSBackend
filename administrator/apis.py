@@ -1,6 +1,7 @@
 import json
 import time
 
+import requests
 from woocommerce import API
 from jotform import JotformAPIClient
 
@@ -139,7 +140,28 @@ class JotformAPI():
 	def __init__(self):
 		self.api = JotformAPIClient(settings.JOTFORM_API_KEY)
 
-	def create_form(self, name, elements, form_type='card'):
+	def update_form_properties(self, formID, apiKey, properties):
+		# Construct the API endpoint URL
+		url = f"https://api.jotform.com/form/{formID}/properties?apiKey={apiKey}"
+
+		# Construct the data payload for the PUT request
+		# data = {"properties": properties}
+		data = {
+			"properties" : {
+				"formType": "cardForm",
+				"welcomePage": [properties]
+			}
+		}
+		print("data is: ", data)
+		data_str = json.dumps(data)
+
+		headers = {"Content-Type": "application/json"}
+
+		response = requests.put(url, data=data_str, headers=headers)
+
+		return response
+
+	def create_form(self, name, elements, welcome, form_type='card'):
 		questions = {}
 
 		for index, value in enumerate(elements):
@@ -187,38 +209,43 @@ class JotformAPI():
 		except Exception as e:
 			print('Error', e)
 
+		self.update_form_properties(form_id, settings.JOTFORM_API_KEY, welcome)
+
 		# Change form type to the modern type: Card form
-		form_id = response['id']
-		properties = json.dumps({
-			'properties': {
-				'formType': 'cardForm'
-			}
-		})
-		r = self.api.set_multiple_form_properties(form_id, properties)
+		# form_id = response['id']
+		# properties = json.dumps({
+		# 	'properties': {
+		# 		'formType': 'cardForm'
+		# 	}
+		# })
+		# r = self.api.set_multiple_form_properties(form_id, properties)
 
 		return response, True
 
 	def update_form(self, name, elements, form_id):
-		# get the existing form
-		form = self.api.get_form(form_id)
-		if not form:
-			return None, False
-		
-		# update the form with the new name and elements
+		# build the questions dictionary
 		questions = {}
-		for index, value in enumerate(elements):
-			if value.get('required'):
-				value['required'] = 'Yes' if value['required'] else 'No'
-			questions[str(index+1)] = value
-		form['questions'] = questions
-		form['title'] = name
-		
-		# update the form
-		response = self.api.update_form(form_id, form)
-		if not response:
+		for i, element in enumerate(elements):
+			questions[str(i+1)] = {
+				"type": element["type"],
+				"text": element["text"],
+				"required": "Yes" if element.get("required") else "No",
+				"name": f"Header{i+1}"
+			}
+
+		# build the data to send in the PUT request
+		data = {"questions": questions}
+		headers = {"Content-Type": "application/json"}
+		url = f"https://api.jotform.com/form/{form_id}/questions?apiKey={settings.JOTFORM_API_KEY}"
+
+		# send the PUT request
+		response = requests.put(url, data=json.dumps(data), headers=headers)
+		print(response)
+		print(response.json())
+		if response.ok:
+			return response.json(), True
+		else:
 			return None, False
-		
-		return response, True
 
 	def get_submissions(self, form_id):
 		try:
