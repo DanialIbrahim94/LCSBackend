@@ -14,7 +14,6 @@ class Command(BaseCommand):
         # Connect to Jotform API and retrieve all submissions
         api = JotformAPI().api
         submissions = api.get_submissions()
-        print(submissions)
         # Process only new submissions
         new_submissions = []
         for submission in submissions:
