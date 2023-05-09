@@ -108,4 +108,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Define the time interval, in minutes, for processing new submissions
-SUBMISSION_PROCESSING_TIME_WINDOW = 15
+SUBMISSION_PROCESSING_TIME_WINDOW = 5
