@@ -411,42 +411,9 @@ def coupons_sendToCustomer(request):
         sendBy_email = request.data.get("sendBy_email")
         send_code = request.data.get("send_code")
 
-        subject = 'Congratulations On Receiving A Free $100 Coupon Code!'
-        text_content = f'''
-Congrats!
-
-Here Is A Unique Coupon Code To Access Up To $100 In GUARANTEED Travel Savings BELOW Prices On 1 Million Worldwide Hotels And Thousands Of 5-Star Resorts Listed On Expedia, Priceline, And Others.
-Coupon Code: {send_code}
-Follow the steps below to redeem your coupon code:
-Step 1: Visit https://mytravelplanet.com and click on “Redeem Code”
-Step 2: Follow the Instructions On The Page and Fill Out The Form.
-Step 3: Enjoy Your Hotel Savings!
-For any questions, feel free to reach out to us at https://mytravelplanet.com/contact
-        '''
-        html_content = f'''
-Congrats!
-<br />
-<br />
-Here Is A Unique Coupon Code To Access Up To $100 In GUARANTEED Travel Savings BELOW Prices On 1 Million Worldwide Hotels And Thousands Of 5-Star Resorts Listed On Expedia, Priceline, And Others.
-<br />
-<br />
-<span style="font-size: 17px;color: red;">Coupon Code: <b style="color: blue;">{send_code}</b></span>
-<p>
-Follow the steps below to redeem your coupon code:
-<br />
-<b>Step 1:</b> Visit https://mytravelplanet.com and click on “Redeem Code”
-<br />
-<b>Step 2:</b> Follow the Instructions On The Page and Fill Out The Form.
-<br />
-<b>Step 3:</b> Enjoy Your Hotel Savings!
-</p>
-For any questions, feel free to reach out to us at https://mytravelplanet.com/contact
-        '''
-        msg = EmailMultiAlternatives(subject,text_content,from_email=settings.EMAIL_HOST_USER,to=[sendTo_email])
-        msg.attach_alternative(html_content, "text/html")
-        msg.send()
-
+        send_coupon_email(sendBy_id, sendTo_email, send_code)
         Coupons.objects.get(code=send_code, user_id=sendBy_id).delete()
+
         history_serializer = CouponHistorySerializer(data=request.data.get("history"))
         if history_serializer.is_valid():
             history_serializer.save()
