@@ -161,6 +161,16 @@ class JotformAPI():
 
 		return response
 
+	def get_form_welcome_page(self, formID):
+		# Construct the API endpoint URL
+		url = f"https://api.jotform.com/form/{formID}/properties?apiKey={settings.JOTFORM_API_KEY}"
+
+		headers = {"Content-Type": "application/json"}
+
+		response = requests.get(url, headers=headers)
+
+		return response.json()['content']['welcomePage'][0]
+
 	def create_form(self, name, elements, welcome, form_type='card'):
 		questions = {}
 
@@ -226,22 +236,24 @@ class JotformAPI():
 		# build the questions dictionary
 		questions = {}
 		for i, element in enumerate(elements):
+			print(element)
 			questions[str(i+1)] = {
 				"type": element["type"],
 				"text": element["text"],
 				"required": "Yes" if element.get("required") else "No",
-				"name": f"Header{i+1}"
+				# "name": f"Header{i+1}"
 			}
 
 		# build the data to send in the PUT request
-		data = {"questions": questions}
 		headers = {"Content-Type": "application/json"}
-		url = f"https://api.jotform.com/form/{form_id}/questions?apiKey={settings.JOTFORM_API_KEY}"
+		for qid, question in questions.items():
+			url = f"https://api.jotform.com/form/{form_id}/question/{qid}?apiKey={settings.JOTFORM_API_KEY}"
 
-		# send the PUT request
-		response = requests.put(url, data=json.dumps(data), headers=headers)
-		print(response)
-		print(response.json())
+			# send the PUT request
+			response = requests.post(url, data=json.dumps(question), headers=headers)
+			print(response)
+			print(response.json())
+
 		if response.ok:
 			return response.json(), True
 		else:
@@ -257,12 +269,13 @@ class JotformAPI():
 
 	def get_form_data(self, form_id):
 		form = self.api.get_form(form_id)
-		print(form)
+		welcome_page = self.get_form_welcome_page(form_id)
 		form_questions = self.api.get_form_questions(form_id)
 		print(form_questions)
 		form_data = {
 			'id': form_id,
 			'name': form['title'],
 			'questions': form_questions,
+			'welcome_page': welcome_page
 		}
 		return form_data, True
