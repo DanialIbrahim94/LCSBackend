@@ -594,7 +594,14 @@ def get_submissions(request, user_id):
 
     submissions, ok = api.get_submissions(form_id)
     if ok:
-        return Response({'submissions': submissions}, status=status.HTTP_200_OK)
+        leads_count = user.leads_count
+        total_leads_count = len(submissions)
+        data = {
+            'submissions': submissions[:leads_count],
+            'leads_count': leads_count,
+            'total_leads_count': total_leads_count,
+        }
+        return Response(data, status=status.HTTP_200_OK)
 
     return Response({'message': "Failed retrieve submissions!"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -610,8 +617,9 @@ def download_submissions(request, user_id):
     form_id = user.jotform_id
     api = JotformAPI()
 
+    leads_count = user.leads_count
     submissions, ok = api.get_submissions(form_id)
-    print(submissions)
+    submissions = submissions[:leads_count]
 
     if ok:
         # Define the output file name
