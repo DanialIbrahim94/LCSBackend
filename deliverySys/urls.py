@@ -49,5 +49,6 @@ urlpatterns = [
     path('jotform/<int:user_id>/update/', views.update_jotform),
     path('jotform/<int:user_id>/submissions/', views.get_submissions),
     path('jotform/<int:user_id>/submissions/download/', views.download_submissions),
+    path('leads/order/', views.order_leads),
     re_path(r'^email/message/', views.send_message),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

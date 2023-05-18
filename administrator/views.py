@@ -14,7 +14,7 @@ from rest_framework import status
 
 from .models import User, Role, Business, Coupons, CouponHistory, DownHistory
 from .serializers import *
-from .apis import WooCommerceAPI, JotformAPI
+from .apis import LeadsOrderAPI, WooCommerceAPI, JotformAPI
 
 
 @api_view(['POST'])
@@ -648,3 +648,32 @@ def download_submissions(request, user_id):
         return response
 
     return Response({'message': "Failed retrieve submissions!"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def order_leads(request):
+    user_id = request.data.get('user_id')
+    user = None
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(data={'message': "You don't have permission!"}, status=status.HTTP_400_BAD_REQUEST)
+
+    quantity = request.data.get('quantity')
+    if quantity < 1:
+        return Response(data={'message': "Amount of coupons to be created must be valid!"}, status=status.HTTP_400_BAD_REQUEST)
+
+    api = LeadsOrderAPI()
+
+    # Place an order
+    order = api.order_leads(user, quantity)
+    print(order.json())
+    if order.ok:
+        # Return the payment link
+        data = {
+            'payment_url': order.json()['payment_url']
+        }
+
+        return Response(data=data, status=status.HTTP_200_OK)
+
+    return Response(data={'message': order.reason}, status=status.HTTP_400_BAD_REQUEST)

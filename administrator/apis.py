@@ -55,7 +55,6 @@ class WooCommerceAPI():
 
 		return customer
 
-
 	def order(self, user, amount):
 		first_name, *last_name = user.fullName.split(' ')
 		data = {
@@ -133,6 +132,93 @@ class WooCommerceAPI():
 				pass
 
 		return False
+
+
+class LeadsOrderAPI(WooCommerceAPI):
+	product_id = 30183
+
+	def order_leads(self, user, quantity):
+		try:
+			first_name, last_name = user.fullName.split(' ')
+		except:
+			first_name = user.fullName
+			last_name = ""
+
+		data = {
+			"payment_method": settings.WOOCOMMERCE_PAYMENT_METHOD,
+			"payment_method_title": settings.WOOCOMMERCE_PAYMENT_METHOD_TITLE,
+			"set_paid": False,
+			"line_items": [
+				{
+					"product_id": self.product_id,  # Leads product ID
+					"quantity": quantity
+				}
+			],
+			"billing": {
+				"first_name": first_name,
+				"last_name": last_name,
+				"address_1": user.address,
+				"address_2": "",
+				"city": "",
+				"state": "",
+				"postcode": "",
+				"country": "",
+				"email": user.email,
+				"phone": user.phone
+			},
+		}
+		customer = self.get_customer(user)
+		if customer and customer.get('id'):
+			data["customer_id"] = customer.get('id')
+
+		response = self.post('orders', data)
+		return response
+
+	def get_orders(self, email):
+		response = self.get('orders', params={'search': email}).json()
+		filtered_orders = []
+		while response:
+			order = response.pop(0)
+			if order and order['billing']['email'] == email and order.get('status') != 'completed':
+				if order['line_items'][0]['product_id'] == self.product_id:
+					filtered_orders.append(order)
+
+		return filtered_orders
+
+	def verify_order(self, order_id):
+		order = self.get(f'orders/{order_id}')
+		if order.ok:
+			_order = order.json()
+			status = _order['status']
+			if status == 'completed':
+				return False, {'message': 'Order already processed!'}
+
+			if status != 'processing':
+				return False, {'message': 'The order has not been paid for yet.'}
+
+			user_email = _order['billing']['email']
+			line_items = _order['line_items']
+			total_quantity = sum(item['quantity'] for item in line_items)
+
+			if any(item['product_id'] == 30183 for item in line_items):
+				# If the leads product is included in the order
+				user = User.objects.filter(email=user_email).first()
+				if user:
+					is_ok = self.set_order_status(order_id, 'completed')
+					if not is_ok:
+						print('Couldn\'t automatically complete the order thus we are not releasing the codes. Please contact the administrators of this site')
+						return False, {
+							'message': '''
+								Couldn\'t automatically complete the order thus we are not releasing the codes.\n
+								Please contact the administrators of this site
+							'''
+						}
+
+					user.leads_count += total_quantity
+					user.save()
+					return True, {'is_valid': True}
+
+		return False, {}
 
 
 class JotformAPI():
