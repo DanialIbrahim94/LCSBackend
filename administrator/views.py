@@ -506,8 +506,9 @@ def create_jotform(request):
     name = data['formName']
     elements = data['formElements']
     welcome = data['welcomePage']
-    print(welcome)
-    response, ok = api.create_form(name, elements, welcome)
+    verification_code = data['verificationCode']
+
+    response, ok = api.create_form(name, elements, welcome, verification_code)
 
     if ok:
         form_id = response['id']

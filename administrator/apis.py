@@ -235,10 +235,10 @@ class JotformAPI():
 		data = {
 			"properties" : {
 				"formType": "cardForm",
-				"welcomePage": [properties]
+				"welcomePage": [properties],
+				"emailValidation": "Yes"
 			}
 		}
-		print("data is: ", data)
 		data_str = json.dumps(data)
 
 		headers = {"Content-Type": "application/json"}
@@ -257,12 +257,15 @@ class JotformAPI():
 
 		return response.json()['content']['welcomePage'][0]
 
-	def create_form(self, name, elements, welcome, form_type='card'):
+	def create_form(self, name, elements, welcome, verification_code, form_type='card'):
 		questions = {}
 
 		for index, value in enumerate(elements):
 			if value.get('required'):
 				value['required'] = 'Yes' if value['required'] else 'No'
+
+			if value.get('type') == 'control_email':
+				value['verificationCode'] = 'Yes' if verification_code else 'No'
 			questions[str(index+1)] = value
 
 		form = {
