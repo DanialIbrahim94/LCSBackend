@@ -8,6 +8,7 @@ from jotform import JotformAPIClient
 from django.conf import settings
 
 from administrator.models import User, Coupons
+from administrator.countries import countries_list
 
 
 class WooCommerceAPI():
@@ -259,14 +260,44 @@ class JotformAPI():
 
 	def create_form(self, name, elements, welcome, verification_code, form_type='card'):
 		questions = {}
+		index = 1
 
-		for index, value in enumerate(elements):
+		for value in elements:
 			if value.get('required'):
 				value['required'] = 'Yes' if value['required'] else 'No'
 
 			if value.get('type') == 'control_email':
 				value['verificationCode'] = 'Yes' if verification_code else 'No'
-			questions[str(index+1)] = value
+
+			if value.get('type') == 'control_address':
+				# Country
+				required = value.get('required', 'No')
+				countries = countries_list.values()
+				print(countries)
+
+				value['type'] = 'control_dropdown'
+				value['options'] = '|'.join(countries)
+				value['required'] = required
+
+				questions[str(index)] = value
+				index += 1
+				# State
+				value = {
+					'type': 'control_textbox',
+					'text': 'State',
+					'required': required
+				}
+				questions[str(index)] = value
+				index += 1
+				# City
+				value = {
+					'type': 'control_textbox',
+					'text': 'City',
+					'required': required
+				}
+
+			questions[str(index)] = value
+			index += 1
 
 		form = {
 			'questions': questions,
