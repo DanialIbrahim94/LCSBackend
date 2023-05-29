@@ -163,7 +163,7 @@ class LeadsOrderAPI(WooCommerceAPI):
 				"city": "",
 				"state": "",
 				"postcode": "",
-				"country": "",
+				"country": "US",
 				"email": user.email,
 				"phone": user.phone
 			},
