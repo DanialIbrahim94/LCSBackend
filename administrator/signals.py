@@ -13,7 +13,12 @@ from administrator.options import request_coupons_recharge
 
 @receiver([post_save, post_delete], sender=Coupons)
 def check_coupons_threshold(sender, instance, **kwargs):
-	user = instance.user
+	user = None
+	try:
+		user = instance.user
+	except:
+		pass
+
 	if not user: # bulk coupon
 		return
 	if not user.role or user.role.id != 3:
