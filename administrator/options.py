@@ -56,8 +56,9 @@ Here Is A Unique Coupon Code To Access Up To $100 In GUARANTEED Travel Savings B
 Coupon Code: {coupon_code}
 Follow the steps below to redeem your coupon code:
 Step 1: Visit https://mytravelplanet.com and click on “Redeem Code”
-Step 2: Follow the Instructions On The Page and Fill Out The Form.
-Step 3: Enjoy Your Hotel Savings!
+Step 2: Watch A Quick Video To Learn How The Savings Work. Click The Button Below After Completing It.
+Step 3: Follow the Instructions On The Following Page and Fill Out The Form.
+Step 4: Enjoy Your Hotel Savings!
 For any questions, feel free to reach out to us at https://mytravelplanet.com/contact
     '''
     html_content = f'''
@@ -73,9 +74,11 @@ Follow the steps below to redeem your coupon code:
 <br />
 <b>Step 1:</b> Visit https://mytravelplanet.com and click on “Redeem Code”
 <br />
-<b>Step 2:</b> Follow the Instructions On The Page and Fill Out The Form.
+<b>Step 2:</b> Watch A Quick Video To Learn How The Savings Work. Click The Button Below After Completing It.
 <br />
-<b>Step 3:</b> Enjoy Your Hotel Savings!
+<b>Step 3:</b> Follow the Instructions On The Following Page and Fill Out The Form.
+<br />
+<b>Step 4:</b> Enjoy Your Hotel Savings!
 </p>
 For any questions, feel free to reach out to us at https://mytravelplanet.com/contact
     '''
