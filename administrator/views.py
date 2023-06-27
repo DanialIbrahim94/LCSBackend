@@ -678,3 +678,38 @@ def order_leads(request):
         return Response(data=data, status=status.HTTP_200_OK)
 
     return Response(data={'message': order.reason}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def user_lead_orders(request, user_id):
+    user = None
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(data={'message': "You don't have permission!"}, status=status.HTTP_400_BAD_REQUEST)
+
+    api = LeadsOrderAPI()
+
+    # Place an order
+    orders = api.get_orders(user.email)
+    data = {
+        'data': orders
+    }
+
+    return Response(data=data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def verify_lead_order(request, order_id):
+    api = LeadsOrderAPI()
+
+    # Verify the order
+    is_completed, data = api.verify_order(order_id)
+    if is_completed:
+        # release the coupons
+
+        return Response(data=data, status=status.HTTP_200_OK)
+
+    return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+
+    
