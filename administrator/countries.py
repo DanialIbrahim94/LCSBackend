@@ -1,4 +1,5 @@
 countries_list = {
+	"US": "United States",
 	"AF": "Afghanistan",
 	"AX": "Aland Islands",
 	"AL": "Albania",
@@ -234,7 +235,6 @@ countries_list = {
 	"UA": "Ukraine",
 	"AE": "United Arab Emirates",
 	"GB": "United Kingdom",
-	"US": "United States",
 	"UM": "United States Minor Outlying Islands",
 	"UY": "Uruguay",
 	"UZ": "Uzbekistan",
