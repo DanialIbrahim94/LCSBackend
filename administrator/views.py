@@ -594,11 +594,34 @@ def get_submissions(request, user_id):
     api = JotformAPI()
 
     submissions, ok = api.get_submissions(form_id)
+
     if ok:
         leads_count = user.leads_count
         total_leads_count = len(submissions)
+        filtered_submissions = submissions[:leads_count]
+
+        for submission in submissions[leads_count:]:
+            filtered_submission = {**submission}
+            filtered_answers = {}
+
+            for answer_key, answer_value in filtered_submission['answers'].items():
+                filtered_answers[answer_key] = {**answer_value}
+                
+                if answer_value['type'] == 'control_fullname':
+                    first_name = answer_value['answer'].get('first', '')
+                    last_name = answer_value['answer'].get('last', '')
+                    last_name_stars = '*' * len(last_name)
+
+                    filtered_answers[answer_key]['answer'] = {'first': first_name, 'last': 'Hidden'}
+                    filtered_answers[answer_key]['prettyFormat'] = first_name + ' ' + last_name_stars
+                else:
+                    filtered_answers[answer_key]['answer'] = 'Hidden'  # Replace the answer value with a placeholder text
+
+            filtered_submission['answers'] = filtered_answers
+            filtered_submissions.append(filtered_submission)
+
         data = {
-            'submissions': submissions[:leads_count],
+            'submissions': filtered_submissions,
             'leads_count': leads_count,
             'total_leads_count': total_leads_count,
         }
