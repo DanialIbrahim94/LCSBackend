@@ -259,8 +259,18 @@ class JotformAPI():
 		return response.json()['content']['welcomePage'][0]
 
 	def create_form(self, name, elements, welcome, verification_code, form_type='card'):
-		questions = {}
-		index = 1
+		questions = {
+			"1": {
+				"type": "control_head",
+				"text": "Important Notice",
+				"subHeader": "Please be aware that the information you provide in this form may be sold for marketing purposes.",
+				"order":"1",
+				"showQuestionCount": "No",
+				"nextButtonText": "I acknowledge",
+				"name":"Header"
+			}
+		}
+		index = 2
 
 		for value in elements:
 			if value.get('required'):
