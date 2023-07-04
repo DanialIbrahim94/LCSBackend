@@ -392,6 +392,10 @@ class JotformAPI():
 	def get_submissions(self, form_id):
 		try:
 			response = self.api.get_form_submissions(form_id)
+			for submission in response:
+				answers = submission.get('answers', {})
+				if '1' in answers:  # Assuming '1' is the control_header question ID
+					del answers['1']
 			return response, True
 		except Exception as e:
 			print(e)
