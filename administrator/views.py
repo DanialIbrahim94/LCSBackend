@@ -608,8 +608,8 @@ def get_submissions(request, user_id):
                 filtered_answers[answer_key] = {**answer_value}
                 
                 if answer_value['type'] == 'control_fullname':
-                    first_name = answer_value['answer'].get('first', '')
-                    last_name = answer_value['answer'].get('last', '')
+                    first_name = answer_value.get('answer', {}).get('first', '')
+                    last_name = answer_value.get('answer', {}).get('last', '')
                     last_name_stars = '*' * len(last_name)
 
                     filtered_answers[answer_key]['answer'] = {'first': first_name, 'last': 'Hidden'}
