@@ -596,7 +596,7 @@ def get_submissions(request, user_id):
     submissions, ok = api.get_submissions(form_id)
 
     if ok:
-        leads_count = user.leads_count
+        leads_count = len(submissions)
         total_leads_count = len(submissions)
         filtered_submissions = submissions[:leads_count]
 
