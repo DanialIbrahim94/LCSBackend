@@ -596,7 +596,7 @@ def get_submissions(request, user_id):
     submissions, ok = api.get_submissions(form_id)
 
     if ok:
-        leads_count = user.leads_count
+        leads_count = len(submissions)
         total_leads_count = len(submissions)
         filtered_submissions = submissions[:leads_count]
 
@@ -641,9 +641,8 @@ def download_submissions(request, user_id):
     form_id = user.jotform_id
     api = JotformAPI()
 
-    leads_count = user.leads_count
     submissions, ok = api.get_submissions(form_id)
-    submissions = submissions[:leads_count]
+    leads_count = len(submissions)
 
     if ok:
         # Define the output file name
