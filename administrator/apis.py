@@ -235,7 +235,7 @@ class JotformAPI():
 		# data = {"properties": properties}
 		data = {
 			"properties" : {
-				"formType": "cardForm",
+				"formType": "ClassicForm",
 				"welcomePage": [properties],
 				"emailValidation": "Yes"
 			}
@@ -262,11 +262,13 @@ class JotformAPI():
 		questions = {
 			"1": {
 				"type": "control_head",
-				"text": "Important Notice",
-				"subHeader": "Please be aware that the information you provide in this form may be sold for marketing purposes.",
+				"text": "<b style='color: #4a98d2;'>The $100</b> Hotel Saver Gift",
+				"subHeader": """You’re about to receive a $100 coupon that you can redeem and use at 1,000,000 worldwide hotels and resorts up to 2-years, once redeemed. There is nothing to join, no blackout dates, no travel restrictions, and no timeshare presentations to attend.
+					<b>NO GIMMICKS, JUST SAVINGS</b>
+      				<small>You will be emailed with instructions how to use this within 5-minutes once submitted</small>""",
 				"order":"1",
 				"showQuestionCount": "No",
-				"nextButtonText": "I acknowledge",
+				"headerType": ['large', 'small'],
 				"name":"Header"
 			}
 		}
@@ -291,29 +293,38 @@ class JotformAPI():
 
 				questions[str(index)] = value
 				index += 1
-				# State
+				# State, City
 				value = {
 					'type': 'control_textbox',
-					'text': 'State',
+					'text': 'State, City',
 					'required': required
 				}
 				questions[str(index)] = value
-				index += 1
-				# City
-				value = {
-					'type': 'control_textbox',
-					'text': 'City',
-					'required': required
-				}
 
 			questions[str(index)] = value
 			index += 1
+
+		questions[str(index)] = {
+			'type': 'control_checkbox',
+			'text': 'required',
+			'options': 'I understand that by accepting this $100 hotel saver gift, my information may be sold for marketing purposes!',
+			'required': 'Yes',
+		}
+		index += 1
+
+		questions[str(index)] = {
+			'type': 'control_button',
+			'text': 'Get Yours Now!',
+			'buttonStyle': 'simple_blue',
+			'required': 'Yes'
+		}
 
 		form = {
 			'questions': questions,
 			'properties': {
 				'title': name,
 				'theme': form_type,
+				'styles': ['baby_blue'],
 			},
 		}
 
@@ -349,7 +360,7 @@ class JotformAPI():
 		except Exception as e:
 			print('Error', e)
 
-		self.update_form_properties(form_id, settings.JOTFORM_API_KEY, welcome)
+		# self.update_form_properties(form_id, settings.JOTFORM_API_KEY, welcome)
 
 		# Change form type to the modern type: Card form
 		# form_id = response['id']
