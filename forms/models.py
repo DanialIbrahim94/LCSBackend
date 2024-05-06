@@ -30,13 +30,13 @@ class Field(models.Model):
 	TEXT_INPUT = 'control_input'
 	EMAIL_INPUT = 'control_email'
 	PHONE_INPUT = 'control_phone'
-	DATETIME_INPUT = 'control_datetime'
+	DATE_INPUT = 'control_date'
 	COUNTRY_INPUT = 'control_dropdown'
 	IDENTIFIER_CHOICES = (
 		(TEXT_INPUT, 'text input'),
 		(EMAIL_INPUT, 'email input'),
 		(PHONE_INPUT, 'phone input'),
-		(DATETIME_INPUT, 'datetime input'),
+		(DATE_INPUT, 'date input'),
 		(COUNTRY_INPUT, 'dropdown input'),
 	)
 
@@ -99,14 +99,17 @@ class Submission(models.Model):
 			self.save()
 
 		subject = 'Email Verification'
-		message = render_to_string('emails/verification_email.html', {'verification_code': self.verification_code})
+		html_message = render_to_string('emails/verification_email.html', {'verification_code': self.verification_code})
+		text_message = strip_tags(html_message) # Strip HTML tags for plain text version
 		email = self._get_email()
 
 		if not email:
 			# Handle missing or invalid email field in data
 			return False
 
-		send_mail(subject, message, settings.EMAIL_HOST_USER, [email])
+		msg = EmailMultiAlternatives(subject, text_message, settings.EMAIL_HOST_USER, [email])
+		msg.attach_alternative(html_message, "text/html")
+		msg.send()
 
 	def verify_email_code(self, verification_code):
 		if verification_code == self.verification_code:

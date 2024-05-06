@@ -41,8 +41,8 @@ class DynamicForm(forms.Form):
                         label=field_name,
                         max_length=17
                     )
-                elif field_type == Field.DATETIME_INPUT:
-                    self.fields[field_name] = forms.DateTimeField(
+                elif field_type == Field.DATE_INPUT:
+                    self.fields[field_name] = forms.DateField(
                         required=field.required,
                         label=field_name,
                         widget=DateTimeInput(attrs={'type': 'datetime-local'})
