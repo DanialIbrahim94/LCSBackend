@@ -14,14 +14,24 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, re_path
+from django.urls import path, re_path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+from rest_framework.routers import DefaultRouter
+
 from administrator import views
+from forms import views as forms_views
+
+
+router = DefaultRouter()
+router.register(r'forms', forms_views.FormViewSet, basename='forms')
+router.register(r'forms/(?P<form_id>\d+)/fields', forms_views.FieldViewSet, basename='fields')
+router.register(r'forms/(?P<form_id>\d+)/submissions', forms_views.SubmissionViewSet, basename='submissions')
 
 
 urlpatterns = [
+    path('', include(router.urls)),
     path('admin/', admin.site.urls),
     re_path(r'^auth/login/', views.auth_login), 
     re_path(r'^auth/signUp/', views.auth_signUp),
@@ -49,6 +59,9 @@ urlpatterns = [
     path('jotform/<int:user_id>/update/', views.update_jotform),
     path('jotform/<int:user_id>/submissions/', views.get_submissions),
     path('jotform/<int:user_id>/submissions/download/', views.download_submissions),
+    path('submit/<slug:slug>/', forms_views.submit_form, name='submission-form'),
+    path('verify-email/<int:submission_id>/', forms_views.verify_email, name='verify_email'),
+    path('success/', forms_views.success, name='success'),
     path('leads/order/', views.order_leads),
     re_path(r'^lead-orders/(?P<user_id>[0-9]+)$', views.user_lead_orders),
     path('lead-orders/<int:order_id>/verify/', views.verify_lead_order),

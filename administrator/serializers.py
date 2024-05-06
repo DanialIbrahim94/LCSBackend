@@ -21,12 +21,19 @@ class UserSerializer(serializers.ModelSerializer):
     role = RoleSerializer(required=True)
     coupons_amount = serializers.SerializerMethodField()
     coupons_minimum_amount = serializers.SerializerMethodField()
+    jotform_id = serializers.SerializerMethodField()
 
     def get_coupons_amount(self, obj):
         return Coupons.objects.filter(user=obj).count()
 
     def get_coupons_minimum_amount(self, obj):
         return settings.MINIMUM_COUPONS_AMOUNT
+
+    def get_jotform_id(self, obj):
+        if obj.forms.exists():
+            return obj.forms.first().slug
+        else:
+            return None
 
     class Meta:
         model = User

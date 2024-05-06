@@ -485,7 +485,6 @@ def verify_order(request, order_id):
 
 @api_view(['POST'])
 def create_jotform(request):
-    print(request.data)
     user_id = request.data.get('user_id')
     user = None
     try:
@@ -493,7 +492,7 @@ def create_jotform(request):
     except User.DoesNotExist:
         return Response(data={'message': "Hey, you don't have permission to do that!"}, status=status.HTTP_400_BAD_REQUEST)
 
-    if user.jotform_id:
+    if user.forms.exists():
         return Response(
             data={
                 'message': "Sorry, you have already created a form. You can only create one form per account."
@@ -503,23 +502,20 @@ def create_jotform(request):
 
     api = JotformAPI()
     data = request.data
-    name = data['formName']
-    elements = data['formElements']
-    welcome = data['welcomePage']
-    verification_code = data['verificationCode']
+    name = data.get('formName')
+    elements = data.get('formElements')
+    welcome = data.get('welcomePage')
+    verification_code = data.get('verificationCode')
 
-    response, ok = api.create_form(name, elements, welcome, verification_code)
+    form, ok = api.create_form(name, elements, welcome, verification_code, user)
 
     if ok:
-        form_id = response['id']
-        form_url = response['url']
-        user.jotform_id = form_id
-        user.save()
+        url = form.get_absolute_url()
 
         res_data = {
             'message': 'Form created successfully!',
-            'form_url': form_url,
-            'form_id': form_id,
+            'form_url': url,
+            'form_id': form.slug,
         }
         return Response(res_data, status=status.HTTP_201_CREATED)
 
@@ -534,7 +530,7 @@ def update_jotform(request, user_id):
     except User.DoesNotExist:
         return Response(data={'message': "Hey, you don't have permission to do that!"}, status=status.HTTP_400_BAD_REQUEST)
 
-    if not user.jotform_id:
+    if not user.forms.exists():
         return Response(
             data={
                 'message': "Sorry, You should create a form first."
@@ -546,7 +542,7 @@ def update_jotform(request, user_id):
     data = request.data
     name = data['formName']
     elements = data['formElements']
-    response, ok = api.update_form(name, elements, user.jotform_id)
+    response, ok = api.update_form(name, elements, user)
 
     if ok:
         res_data = {
@@ -565,16 +561,17 @@ def get_jotform(request, user_id):
     except User.DoesNotExist:
         return Response(data={'message': "Hey, you don't have permission to do that!"}, status=status.HTTP_400_BAD_REQUEST)
 
-    if not user.jotform_id:
+    if not user.forms.exists():
         return Response(
             data={
                 'message': "Sorry, You should create a form first."
             },
             status=status.HTTP_400_BAD_REQUEST
         )
+    form = user.forms.first()
 
     api = JotformAPI()
-    response, ok = api.get_form_data(user.jotform_id)
+    response, ok = api.get_form_data(form.slug)
 
     if ok:
         return Response({'form': response}, status=status.HTTP_200_OK)
@@ -590,44 +587,50 @@ def get_submissions(request, user_id):
     except User.DoesNotExist:
         return Response(data={'message': "Hey, you don't have permission to do that!"}, status=status.HTTP_400_BAD_REQUEST)
 
-    form_id = user.jotform_id
+    if not user.forms.exists():
+        return Response(
+            data={
+                'message': "Sorry, You should create a form first."
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    form = user.forms.first()
+
+    form_slug = form.slug
     api = JotformAPI()
 
-    submissions, ok = api.get_submissions(form_id)
+    submissions = api.get_submissions(form_slug)
 
-    if ok:
-        leads_count = len(submissions)
-        total_leads_count = len(submissions)
-        filtered_submissions = submissions[:leads_count]
+    leads_count = len(submissions)
+    total_leads_count = len(submissions)
+    filtered_submissions = submissions[:leads_count]
 
-        for submission in submissions[leads_count:]:
-            filtered_submission = {**submission}
-            filtered_answers = {}
+    for submission in submissions[leads_count:]:
+        filtered_submission = {**submission}
+        filtered_answers = {}
 
-            for answer_key, answer_value in filtered_submission['answers'].items():
-                filtered_answers[answer_key] = {**answer_value}
-                
-                if answer_value['type'] == 'control_fullname':
-                    first_name = answer_value.get('answer', {}).get('first', '')
-                    last_name = answer_value.get('answer', {}).get('last', '')
-                    last_name_stars = '*' * len(last_name)
+        for answer_key, answer_value in filtered_submission['answers'].items():
+            filtered_answers[answer_key] = {**answer_value}
+            
+            if answer_value['type'] == 'control_fullname':
+                first_name = answer_value.get('answer', {}).get('first', '')
+                last_name = answer_value.get('answer', {}).get('last', '')
+                last_name_stars = '*' * len(last_name)
 
-                    filtered_answers[answer_key]['answer'] = {'first': first_name, 'last': 'Hidden'}
-                    filtered_answers[answer_key]['prettyFormat'] = first_name + ' ' + last_name_stars
-                else:
-                    filtered_answers[answer_key]['answer'] = 'Hidden'  # Replace the answer value with a placeholder text
+                filtered_answers[answer_key]['answer'] = {'first': first_name, 'last': 'Hidden'}
+                filtered_answers[answer_key]['prettyFormat'] = first_name + ' ' + last_name_stars
+            else:
+                filtered_answers[answer_key]['answer'] = 'Hidden'  # Replace the answer value with a placeholder text
 
-            filtered_submission['answers'] = filtered_answers
-            filtered_submissions.append(filtered_submission)
+        filtered_submission['answers'] = filtered_answers
+        filtered_submissions.append(filtered_submission)
 
-        data = {
-            'submissions': filtered_submissions,
-            'leads_count': leads_count,
-            'total_leads_count': total_leads_count,
-        }
-        return Response(data, status=status.HTTP_200_OK)
-
-    return Response({'message': "Failed retrieve submissions!"}, status=status.HTTP_400_BAD_REQUEST)
+    data = {
+        'submissions': filtered_submissions,
+        'leads_count': leads_count,
+        'total_leads_count': total_leads_count,
+    }
+    return Response(data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -638,39 +641,45 @@ def download_submissions(request, user_id):
     except User.DoesNotExist:
         return Response(data={'message': "Hey, you don't have permission to do that!"}, status=status.HTTP_400_BAD_REQUEST)
 
-    form_id = user.jotform_id
-    api = JotformAPI()
+    if not user.forms.exists():
+        return Response(
+            data={
+                'message': "Sorry, You should create a form first."
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    form = user.forms.first()
 
-    submissions, ok = api.get_submissions(form_id)
+    form_slug = form.slug
+    api = JotformAPI()
+    
+    submissions = api.get_submissions(form_slug)
     leads_count = len(submissions)
 
-    if ok:
-        # Define the output file name
-        filename = 'submissions.csv'
+    # Define the output file name
+    filename = 'submissions.csv'
 
-        # Extract the header row from the first submissions item
-        header = list(submissions[0]['answers'].values())
-        header = [item['text'] for item in header]
+    # Extract the header row from the first submissions item
+    header = list(submissions[0]['answers'].values())
+    header = [item['text'] for item in header]
 
-        # Extract the submissions rows from all submissions items
-        rows = []
-        for item in submissions:
-            row = list(item['answers'].values())
-            row = [item.get('answer', '') for item in row]
-            rows.append(row)
+    # Extract the submissions rows from all submissions items
+    rows = []
+    for item in submissions:
+        row = list(item['answers'].values())
+        row = [item.get('answer', '') for item in row]
+        rows.append(row)
 
-        # Create a CSV response object with appropriate headers
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    # Create a CSV response object with appropriate headers
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
-        # Write the submissions to the response
-        writer = csv.writer(response)
-        writer.writerow(header)
-        writer.writerows(rows)
+    # Write the submissions to the response
+    writer = csv.writer(response)
+    writer.writerow(header)
+    writer.writerows(rows)
 
-        return response
-
-    return Response({'message': "Failed retrieve submissions!"}, status=status.HTTP_400_BAD_REQUEST)
+    return response
 
 
 @api_view(['POST'])

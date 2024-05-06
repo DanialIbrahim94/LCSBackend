@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Confirmation</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap">
+    <style>
+        body {
+            font-family: 'Raleway', Arial, sans-serif; /* Use Raleway font */
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            font-size: 28px;
+            margin-top: 0;
+        }
+        p {
+            font-size: 16px;
+            margin-top: 5px;
+            margin-bottom: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 400;
+            color: #333;
+        }
+        input {
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            height: 40px;
+            width: 250px;
+            padding: 0 10px;
+        }
+        button {
+            background-color: #68a8db;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            border: none;
+        }
+        button:hover {
+            background-color: #57a8db;
+        }
+        .error {
+            color: darkred;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Email Confirmation</h1>
+        {% if error %}
+        <p class="error">{{ error }}</p>
+        {% endif %}
+        <p>Please enter the verification code sent to your email.</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <label for="verification_code">Verification Code:</label>
+            <input type="text" id="verification_code" name="verification_code" required>
+            <button type="submit">Verify</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,14 +1,16 @@
 import json
 import time
-
 import requests
+
 from woocommerce import API
 from jotform import JotformAPIClient
 
+from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
 
 from administrator.models import User, Coupons
 from administrator.countries import countries_list
+from forms.models import Form, Field, Submission
 
 
 class WooCommerceAPI():
@@ -256,36 +258,24 @@ class JotformAPI():
 
 		response = requests.get(url, headers=headers)
 
-		return response.json()['content']['welcomePage'][0]
+		return response.json()['content'].get('welcomePage', None)
 
-	def create_form(self, name, elements, welcome, verification_code, form_type='card'):
-		questions = {
-			"1": {
-				"type": "control_head",
-				"text": "<b style='color: #4a98d2;'>The $100</b> Hotel Saver Gift",
-				"subHeader": """You’re about to receive a $100 coupon that you can redeem and use at 1,000,000 worldwide hotels and resorts up to 2-years, once redeemed. There is nothing to join, no blackout dates, no travel restrictions, and no timeshare presentations to attend.
-					<b>NO GIMMICKS, JUST SAVINGS</b>
-      				<small>You will be emailed with instructions how to use this within 5-minutes once submitted</small>""",
-				"order":"1",
-				"showQuestionCount": "No",
-				"headerType": ['large', 'small'],
-				"name":"Header"
-			}
-		}
-		index = 2
-
+	def create_form(self, name, elements, welcome, verification_code, user):
+		name= "<b style='color: #4a98d2;font-size: 64px;'>The $100</b> Hotel Saver Gift"
+		description = 'You’re about to receive a $100 coupon that you can redeem and use at 1,000,000 worldwide hotels and resorts up to 2-years, once redeemed.\n'\
+			'There is nothing to join, no blackout dates, no travel restrictions, and no timeshare presentations to attend.<br />\n'\
+			'<b style="margin-bottom: 20px;">NO GIMMICKS, JUST SAVINGS</b> <br />\n'\
+			'<small>You will be emailed with instructions how to use this within 5-minutes once submitted</small>'
+		questions = {}
+		index = 1
 		for value in elements:
 			if value.get('required'):
 				value['required'] = 'Yes' if value['required'] else 'No'
-
-			if value.get('type') == 'control_email':
-				value['verificationCode'] = 'Yes' if verification_code else 'No'
 
 			if value.get('type') == 'control_address':
 				# Country
 				required = value.get('required', 'No')
 				countries = countries_list.values()
-				print(countries)
 
 				value['type'] = 'control_dropdown'
 				value['options'] = '|'.join(countries)
@@ -295,8 +285,8 @@ class JotformAPI():
 				index += 1
 				# State, City
 				value = {
-					'type': 'control_textbox',
-					'text': 'State, City',
+					'type': 'control_input',
+					'text': 'City, State',
 					'required': required
 				}
 				questions[str(index)] = value
@@ -304,122 +294,179 @@ class JotformAPI():
 			questions[str(index)] = value
 			index += 1
 
-		questions[str(index)] = {
-			'type': 'control_checkbox',
-			'text': 'required',
-			'options': 'I understand that by accepting this $100 hotel saver gift, my information may be sold for marketing purposes!',
-			'required': 'Yes',
-		}
-		index += 1
+		form = Form.objects.create(
+			name=name,
+			description=description,
+			user=user,
+			verify_email=verification_code,
+		)
+		for index, question in questions.items():
+			field = Field.objects.create(
+				form=form,
+				identifier=question.get('type'),
+				label=question.get('text'),
+				options=question.get('options'),
+				required=(question.get('required')=='Yes'),
+				position=index,
+			)
+			# Implement email verification
 
-		questions[str(index)] = {
-			'type': 'control_button',
-			'text': 'Get Yours Now!',
-			'buttonStyle': 'simple_blue',
-			'required': 'Yes'
-		}
+		if not form.fields.filter(identifier=Field.EMAIL_INPUT).exists():
+			form.verify_email = False
+			form.save()
 
-		form = {
-			'questions': questions,
-			'properties': {
-				'title': name,
-				'theme': form_type,
-				'styles': ['baby_blue'],
-			},
-		}
+		return form, True
 
-		print(form)
-
-		# for now, the API will keep trying until the form is finally created
-		failed_form_ids = []
-		max_retries = 15
-		retries = 0
-		while retries <= max_retries:
-			retries += 1
-			try:
-				response = self.api.create_form(form)
-				# Now make sure that all the questions are saved
-				form_id = response['id']
-				created_questions = self.api.get_form_questions(form_id)
-				print(len(created_questions), len(questions))
-				if created_questions and len(created_questions) == len(questions):
-					break  # break out of the loop if no exception is raised
-				else:
-					failed_form_ids.append(form_id)
-			except Exception as e:
-				# handle the error
-				print(f"Error creating form: {e}")
-		
-		# the form was not created
-		if retries > max_retries:
-			return None, False
-		try:
-			for failed_form_id in failed_form_ids:
-				res = self.api.delete_form(failed_form_id)
-				print(res)
-		except Exception as e:
-			print('Error', e)
-
-		# self.update_form_properties(form_id, settings.JOTFORM_API_KEY, welcome)
-
-		# Change form type to the modern type: Card form
-		# form_id = response['id']
-		# properties = json.dumps({
-		# 	'properties': {
-		# 		'formType': 'cardForm'
-		# 	}
-		# })
-		# r = self.api.set_multiple_form_properties(form_id, properties)
-
-		return response, True
-
-	def update_form(self, name, elements, form_id):
+	def update_form(self, name, elements, user):
 		# build the questions dictionary
 		questions = {}
-		for i, element in enumerate(elements):
-			print(element)
-			questions[str(i+1)] = {
-				"type": element["type"],
-				"text": element["text"],
-				"required": "Yes" if element.get("required") else "No",
+		index = 1
+		for value in elements:
+			if value.get('type') == 'control_address':
+				# Country
+				required = value.get('required', 'No')
+				countries = countries_list.values()
+
+				value['type'] = 'control_dropdown'
+				value['options'] = '|'.join(countries)
+				value['required'] = required
+
+				questions[str(index)] = value
+				index += 1
+				# State, City
+				value = {
+					'type': 'control_input',
+					'text': 'City, State',
+					'required': required
+				}
+				questions[str(index)] = value
+
+			questions[str(index)] = {
+				"type": value["type"],
+				"text": value["text"],
+				"required": "Yes" if value.get("required") else "No",
 				# "name": f"Header{i+1}"
 			}
+			index += 1
 
-		# build the data to send in the PUT request
-		headers = {"Content-Type": "application/json"}
-		for qid, question in questions.items():
-			url = f"https://api.jotform.com/form/{form_id}/question/{qid}?apiKey={settings.JOTFORM_API_KEY}"
+		form = user.forms.first()
+		form.fields.all().delete()
+		for index, question in questions.items():
+			field = Field.objects.create(
+				form=form,
+				identifier=question.get('type'),
+				label=question.get('text'),
+				options=question.get('options'),
+				required=(question.get('required')=='Yes'),
+				position=index,
+			)
+			# Implement email verification
 
-			# send the PUT request
-			response = requests.post(url, data=json.dumps(question), headers=headers)
-			print(response)
-			print(response.json())
+		return form, True
 
-		if response.ok:
-			return response.json(), True
-		else:
-			return None, False
-
-	def get_submissions(self, form_id):
+	def get_submissions(self, form_slug):
 		try:
-			response = self.api.get_form_submissions(form_id)
-			for submission in response:
-				answers = submission.get('answers', {})
-				if '1' in answers:  # Assuming '1' is the control_header question ID
-					del answers['1']
-			return response, True
-		except Exception as e:
-			print(e)
-			return None, False
+			form = Form.objects.get(slug=form_slug)
+			submissions = Submission.objects.filter(form__slug=form_slug)
 
-	def get_form_data(self, form_id):
-		form = self.api.get_form(form_id)
-		welcome_page = self.get_form_welcome_page(form_id)
-		form_questions = self.api.get_form_questions(form_id)
-		print(form_questions)
+			submission_data = []
+
+			for submission in submissions:
+				answers = dict(submission.data)
+				org_answers = {}
+				index = 2
+				for key, value in answers.items():
+					org_answers[f'{index}'] = {
+						"text": f'{key}',
+						"order": f'{index}',
+						"answer": value
+					}
+					index += 1
+
+				# answers now is like
+				# {
+				#     "Name": "adem",
+				#     "email": "value"
+				# }
+				# how to convert it to be like
+
+				# {
+				#     "1": {
+				#         "order": "1",
+				#         "answer": {
+				#             "first": "new",
+				#             "last": "user"
+				#         },
+				#         "prettyFormat": "new user"
+				#     },
+				#     "3": {
+				#         "order": "3",
+				#         "text": "Birth Date",
+				#         "type": "control_datetime",
+				#         "answer": {
+				#             "month": "04",
+				#             "day": "16",
+				#             "year": "2024",
+				#             "datetime": "2024-04-16 00:00:00"
+				#         },
+				#         "prettyFormat": "04-16-2024-2024-04-16 00:00:00"
+				#     },
+				#     "4": {
+				#         "order": "4",
+				#         "text": "Type a question",
+				#         "type": "control_email",
+				#         "answer": "araariadem0@gmail.com"
+				#     }
+				# }
+
+				submission_info = {
+					"id": str(submission.id),
+					"form_id": str(submission.form.id),
+					"ip": "",  # You can add IP address if available
+					"created_at": submission.date.strftime("%Y-%m-%d %H:%M:%S"),
+					"status": "ACTIVE",  # Assuming all submissions are active
+					"new": "1",  # Assuming all submissions are new
+					"flag": "0",  # Assuming no flags
+					"notes": "",  # Assuming no notes
+					"updated_at": None,  # Assuming no updates
+					"answers": org_answers
+				}
+
+				submission_data.append(submission_info)
+
+			return submission_data
+
+		except Form.DoesNotExist:
+			# Handle form not found
+			return None
+
+	def get_form_data(self, form_slug):
+		form = Form.objects.get(slug=form_slug)
+		welcome_page = []
+		form_questions = {}
+		index = 1
+		for field in form.fields.all():
+			if field.identifier == Field.EMAIL_INPUT:
+				form_questions[index] = {
+					"identifier": field.identifier,
+					"type": field.identifier,
+					"text": field.label,
+					"options": field.options,
+					"required": 'Yes' if field.required else 'No',
+					"verificationCode": 'Yes' if field.form.verify_email else 'No'
+				}
+			else:
+				form_questions[index] = {
+					"identifier": field.identifier,
+					"type": field.identifier,
+					"text": field.label,
+					"options": field.options,
+					"required": 'Yes' if field.required else 'No'
+				}
+			index += 1
 		form_data = {
-			'id': form_id,
-			'name': form['title'],
+			'id': form_slug,
+			'name': form.name,
 			'questions': form_questions,
 			'welcome_page': welcome_page
 		}
