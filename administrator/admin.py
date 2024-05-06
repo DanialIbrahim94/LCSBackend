@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.core.validators import FileExtensionValidator
 from django.contrib.auth import get_user_model
 
-from administrator.models import Coupons, User
+from administrator.models import Coupons, User, Role, Business
 
 
 class CustomFooForm(forms.ModelForm):
@@ -52,3 +52,22 @@ class CouponsAdmin(admin.ModelAdmin):
 		qs = super().get_queryset(request)
 		user = User.objects.first()
 		return qs.filter(user=user)
+
+
+class RoleAdmin(admin.ModelAdmin):
+    list_display = ('roleType',)
+
+
+class BusinessAdmin(admin.ModelAdmin):
+    list_display = ('businessType',)
+
+
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('fullName', 'email', 'phone', 'address', 'birthday', 'couponCount', 'createdAt', 'updatedAt', 'role', 'business', 'jotform_id', 'leads_count', 'last_recharge_request', 'get_last_recharge_request_in_days')
+    list_filter = ('role', 'business', 'createdAt', 'updatedAt')
+    search_fields = ('fullName', 'email', 'phone', 'address', 'jotform_id')
+    readonly_fields = ('createdAt', 'updatedAt', 'get_last_recharge_request_in_days')
+
+admin.site.register(Role, RoleAdmin)
+admin.site.register(Business, BusinessAdmin)
+admin.site.register(User, UserAdmin)
