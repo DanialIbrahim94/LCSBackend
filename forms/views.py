@@ -41,8 +41,8 @@ def submit_form(request, slug):
             submission_data = form_data.cleaned_data
             # Convert datetime fields to strings
             for field_name, field_value in submission_data.items():
-                if isinstance(field_value, datetime.datetime):
-                    submission_data[field_name] = field_value.strftime('%Y-%m-%d %H:%M:%S')
+                if isinstance(field_value, datetime.date):
+                    submission_data[field_name] = field_value.strftime('%Y-%m-%d')
             submission = Submission.objects.create(form=form, data=submission_data)
             if form.verify_email:
                 # send verification code
