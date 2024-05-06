@@ -1,6 +1,5 @@
 from django import forms
 from django.core.validators import RegexValidator
-from django.forms.widgets import DateTimeInput
 
 from .models import Field
 
@@ -45,7 +44,7 @@ class DynamicForm(forms.Form):
                     self.fields[field_name] = forms.DateField(
                         required=field.required,
                         label=field_name,
-                        widget=DateTimeInput(attrs={'type': 'datetime-local'})
+                        widget=forms.widgets.DateInput(attrs={'type': 'date'})
                     )
                 elif field_type == Field.COUNTRY_INPUT:
                     choices = [(choice, choice) for choice in field.options.split('|')]
