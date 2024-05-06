@@ -49,6 +49,7 @@ def submit_form(request, slug):
                 submission.send_verification_email()
                 return redirect(reverse('verify_email', kwargs={'submission_id': submission.id}))
             else:
+                submission.send_coupon()
                 return redirect('success')
     else:
         form_data = DynamicForm(fields=form.fields.all())
@@ -81,6 +82,7 @@ def verify_email(request, submission_id):
                 submission.is_verified = True
                 submission.verification_code = None
                 submission.save()
+                submission.send_coupon()
                 return redirect('success')
             else:
                 return render(request, 'forms/email_verification.html', {'error': 'Invalid verification code'})

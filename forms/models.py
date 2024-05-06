@@ -9,6 +9,9 @@ from django.utils.html import strip_tags
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 
+from administrator.models import Coupons, User
+from administrator.options import send_coupon_email
+
 
 class Form(models.Model):
 	agreed_text = 'I understand that by accepting this $100 hotel saver gift, my information may be sold for marketing purposes!'
@@ -118,3 +121,17 @@ class Submission(models.Model):
 			self.save()
 			return True
 		return False
+
+	def send_coupon(self):
+		user = self.form.user
+		coupon = Coupons.objects.filter(user=user).first()
+		if not coupon:
+			admin_user = User.objects.first()
+			coupon = Coupons.objects.filter(user=admin_user).first()
+
+		email = self._get_email()
+		if email:
+			send_coupon_email(user.id, email, coupon.code)
+			coupon.delete()
+		else:
+			print('error')
