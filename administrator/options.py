@@ -1,6 +1,10 @@
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail import send_mail
 from django.conf import settings
+from django.utils.html import strip_tags
+from django.template.loader import render_to_string
+
+from email.utils import make_msgid
 from administrator.models import Coupons
 
 
@@ -94,4 +98,5 @@ def send_coupon_email(sendBy_id, sendTo_email, coupon_code):
 
     msg = EmailMultiAlternatives(subject, text_message, settings.EMAIL_HOST_USER, [sendTo_email])
     msg.attach_alternative(html_message, "text/html")
+    msg['Message-ID'] = make_msgid()
     print(msg.send())
