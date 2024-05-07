@@ -265,7 +265,7 @@ class JotformAPI():
 		description = 'You’re about to receive a $100 coupon that you can redeem and use at 1,000,000 worldwide hotels and resorts up to 2-years, once redeemed.\n'\
 			'There is nothing to join, no blackout dates, no travel restrictions, and no timeshare presentations to attend.<br />\n'\
 			'<b style="margin-bottom: 20px;">NO GIMMICKS, JUST SAVINGS</b> <br />\n'\
-			'<small>You will be emailed with instructions how to use this within 5-minutes once submitted</small>'
+			'<small>You will be emailed with instructions how to use this within 1-minute once submitted</small>'
 		questions = {}
 		index = 1
 		for value in elements:
