@@ -9,7 +9,6 @@ from django.utils.html import strip_tags
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 
-from email.utils import make_msgid
 from administrator.models import Coupons, User
 from administrator.options import send_coupon_email
 
@@ -114,7 +113,6 @@ class Submission(models.Model):
 
 		msg = EmailMultiAlternatives(subject, text_message, settings.EMAIL_HOST_USER, [email])
 		msg.attach_alternative(html_message, "text/html")
-		msg['Message-ID'] = make_msgid()
 		msg.send()
 
 	def verify_email_code(self, verification_code):
