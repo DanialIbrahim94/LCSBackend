@@ -130,8 +130,5 @@ class Submission(models.Model):
 			coupon = Coupons.objects.filter(user=admin_user).first()
 
 		email = self._get_email()
-		if email:
-			send_coupon_email(user.id, email, coupon.code)
-			coupon.delete()
-		else:
-			print('error')
+		send_coupon_email(user.id, email, coupon.code)
+		coupon.delete()
