@@ -47,7 +47,7 @@ Team Data Capture Pros
 	return True
 
 
-def send_coupon_email(sendBy_id, sendTo_email, coupon_code):
+def send_coupon_email_0(sendBy_id, sendTo_email, coupon_code):
     subject = 'Congratulations On Receiving A Free $100 Coupon Code!'
     text_content = f'''
 Congrats!
@@ -85,3 +85,13 @@ For any questions, feel free to reach out to us at https://mytravelplanet.com/co
     msg = EmailMultiAlternatives(subject,text_content,from_email=settings.EMAIL_HOST_USER,to=[sendTo_email])
     msg.attach_alternative(html_content, "text/html")
     msg.send()
+
+
+def send_coupon_email(sendBy_id, sendTo_email, coupon_code):
+    subject = 'Congratulations On Receiving A Free $100 Coupon Code!'
+    html_message = render_to_string('emails/coupon_email.html', {'coupon_code': coupon_code})
+    text_message = strip_tags(html_message)  # Strip HTML tags for plain text version
+
+    msg = EmailMultiAlternatives(subject, text_message, settings.EMAIL_HOST_USER, [sendTo_email])
+    msg.attach_alternative(html_message, "text/html")
+    print(msg.send())
