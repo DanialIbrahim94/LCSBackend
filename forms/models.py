@@ -102,7 +102,7 @@ class Submission(models.Model):
 			self.verification_code = self._generate_verification_code()
 			self.save()
 
-		subject = 'Email Verification'
+		subject = 'Email verification'
 		html_message = render_to_string('emails/verification_email.html', {'verification_code': self.verification_code})
 		text_message = strip_tags(html_message) # Strip HTML tags for plain text version
 		email = self._get_email()
@@ -111,7 +111,7 @@ class Submission(models.Model):
 			# Handle missing or invalid email field in data
 			return False
 
-		msg = EmailMultiAlternatives(subject, text_message, settings.EMAIL_HOST_USER, [email])
+		msg = EmailMultiAlternatives(subject, text_message, from_email=f'Don\'t Reply  <lcs@datacapturepros.com>', to=[email])
 		msg.attach_alternative(html_message, "text/html")
 		msg.send()
 
