@@ -274,7 +274,7 @@ class JotformAPI():
 
 			if value.get('type') == 'control_address':
 				# Country
-				required = value.get('required', 'No')
+				required = "Yes" if value.get("required") else "No"
 				countries = countries_list.values()
 
 				value['type'] = 'control_dropdown'
@@ -331,9 +331,18 @@ class JotformAPI():
 		questions = {}
 		index = 1
 		for value in elements:
-			if value.get('type') == 'control_address':
+			if value.get('type') == 'control_dropdown':
 				# Country
-				required = value.get('required', 'No')
+				required = "Yes" if value.get("required") else "No"
+				countries = countries_list.values()
+
+				value['type'] = 'control_dropdown'
+				value['options'] = '|'.join(countries)
+				value['required'] = required
+
+			elif value.get('type') == 'control_address':
+				# Country
+				required = "Yes" if value.get("required") else "No"
 				countries = countries_list.values()
 
 				value['type'] = 'control_dropdown'
@@ -362,6 +371,7 @@ class JotformAPI():
 			questions[str(index)] = {
 				"type": value["type"],
 				"text": value["text"],
+				"options": value.get("options", ''),
 				"required": "Yes" if value.get("required") else "No",
 				# "name": f"Header{i+1}"
 			}
