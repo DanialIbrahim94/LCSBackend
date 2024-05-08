@@ -286,7 +286,16 @@ class JotformAPI():
 				# State, City
 				value = {
 					'type': 'control_input',
-					'text': 'City, State',
+					'text': 'State',
+					'required': required
+				}
+				questions[str(index)] = value
+				index += 1
+
+				# State, City
+				value = {
+					'type': 'control_input',
+					'text': 'City',
 					'required': required
 				}
 				questions[str(index)] = value
@@ -336,7 +345,16 @@ class JotformAPI():
 				# State, City
 				value = {
 					'type': 'control_input',
-					'text': 'City, State',
+					'text': 'State',
+					'required': required
+				}
+				questions[str(index)] = value
+				index += 1
+
+				# State, City
+				value = {
+					'type': 'control_input',
+					'text': 'City',
 					'required': required
 				}
 				questions[str(index)] = value

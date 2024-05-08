@@ -63,10 +63,10 @@ class BusinessAdmin(admin.ModelAdmin):
 
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('fullName', 'email', 'phone', 'address', 'birthday', 'couponCount', 'createdAt', 'updatedAt', 'role', 'business', 'jotform_id', 'leads_count', 'last_recharge_request', 'get_last_recharge_request_in_days')
+    list_display = ('fullName', 'email', 'phone', 'role', 'couponCount')
     list_filter = ('role', 'business', 'createdAt', 'updatedAt')
     search_fields = ('fullName', 'email', 'phone', 'address', 'jotform_id')
-    readonly_fields = ('createdAt', 'updatedAt', 'get_last_recharge_request_in_days')
+    exclude = ('birthday', 'couponCount', 'jotform_id', 'leads_count', 'createdAt', 'updatedAt', 'get_last_recharge_request_in_days', 'last_recharge_request')
 
 admin.site.register(Role, RoleAdmin)
 admin.site.register(Business, BusinessAdmin)

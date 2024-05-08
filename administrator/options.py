@@ -1,6 +1,8 @@
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail import send_mail
 from django.conf import settings
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 from administrator.models import Coupons
 
 
@@ -88,10 +90,40 @@ For any questions, feel free to reach out to us at https://mytravelplanet.com/co
 
 
 def send_coupon_email(sendBy_id, sendTo_email, coupon_code):
-    subject = 'Congratulations On Receiving A Free $100 Coupon Code!'
-    html_message = render_to_string('emails/coupon_email.html', {'coupon_code': coupon_code})
-    text_message = strip_tags(html_message)  # Strip HTML tags for plain text version
+    subject = 'Here is your hotel saver gift'
+    text_content = f'''
+Congrats!
 
-    msg = EmailMultiAlternatives(subject, text_message, settings.EMAIL_HOST_USER, [sendTo_email])
-    msg.attach_alternative(html_message, "text/html")
-    print(msg.send())
+Here Is A Unique Coupon Code To Access Up To $100 In GUARANTEED Travel Savings BELOW Prices On 1 Million Worldwide Hotels And Thousands Of 5-Star Resorts Listed On Expedia, Priceline, And Others.
+Coupon Code: {coupon_code}
+Follow the steps below to redeem your coupon code:
+Step 1: Visit https://mytravelplanet.com and click on “Redeem Code”
+Step 2: Watch A Quick Video To Learn How The Savings Work. Click The Button Below After Completing It.
+Step 3: Follow the Instructions On The Following Page and Fill Out The Form.
+Step 4: Enjoy Your Hotel Savings!
+For any questions, feel free to reach out to us at https://mytravelplanet.com/contact
+    '''
+    html_content = f'''
+Congrats!
+<br />
+<br />
+Here Is A Unique Coupon Code To Access Up To $100 In GUARANTEED Travel Savings BELOW Prices On 1 Million Worldwide Hotels And Thousands Of 5-Star Resorts Listed On Expedia, Priceline, And Others.
+<br />
+<br />
+<span style="font-size: 17px;color: red;">Coupon Code: <b style="color: blue;">{coupon_code}</b></span>
+<p>
+Follow the steps below to redeem your coupon code:
+<br />
+<b>Step 1:</b> Visit https://mytravelplanet.com and click on “Redeem Code”
+<br />
+<b>Step 2:</b> Watch A Quick Video To Learn How The Savings Work. Click The Button Below After Completing It.
+<br />
+<b>Step 3:</b> Follow the Instructions On The Following Page and Fill Out The Form.
+<br />
+<b>Step 4:</b> Enjoy Your Hotel Savings!
+</p>
+For any questions, feel free to reach out to us at https://mytravelplanet.com/contact
+    '''
+    msg = EmailMultiAlternatives(subject,text_content,from_email=f'Don\'t Reply  <lcs@datacapturepros.com>',to=[sendTo_email])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
