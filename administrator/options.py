@@ -67,10 +67,11 @@ For any questions, feel free to reach out to us at https://mytravelplanet.com/co
 Congrats!
 <br />
 <br />
-Here Is A Unique Coupon Code To Access Up To $100 In GUARANTEED Travel Savings BELOW Prices On 1 Million Worldwide Hotels And Thousands Of 5-Star Resorts Listed On Expedia, Priceline, And Others.
+<p style="max-width: inherit;">Here Is A Unique Coupon Code To Access Up To $100 In GUARANTEED Travel Savings BELOW Prices On 1 Million Worldwide Hotels And Thousands Of 5-Star Resorts Listed On Expedia, Priceline, And Others.</p>
 <br />
-<br />
+<hr />
 <span style="font-size: 17px;color: red;">Coupon Code: <b style="color: blue;">{coupon_code}</b></span>
+<hr />
 <p>
 Follow the steps below to redeem your coupon code:
 <br />
@@ -107,10 +108,11 @@ For any questions, feel free to reach out to us at https://mytravelplanet.com/co
 Congrats!
 <br />
 <br />
-Here Is A Unique Coupon Code To Access Up To $100 In GUARANTEED Travel Savings BELOW Prices On 1 Million Worldwide Hotels And Thousands Of 5-Star Resorts Listed On Expedia, Priceline, And Others.
+<p style="max-width: inherit;">Here Is A Unique Coupon Code To Access Up To $100 In GUARANTEED Travel Savings BELOW Prices On 1 Million Worldwide Hotels And Thousands Of 5-Star Resorts Listed On Expedia, Priceline, And Others.</p>
 <br />
-<br />
+<hr />
 <span style="font-size: 17px;color: red;">Coupon Code: <b style="color: blue;">{coupon_code}</b></span>
+<hr />
 <p>
 Follow the steps below to redeem your coupon code:
 <br />
