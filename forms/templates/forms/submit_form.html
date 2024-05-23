@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -90,6 +92,7 @@
 </head>
 <body>
     <div class="container" style="text-align: center;">
+        <img src="{% static 'img/logo.png' %}" style="margin-bottom: 20px;">
         <h1>{{ form.name | safe }}</h1>
         <p style="display: grid; margin-bottom: 20px;">{{ form.description | safe }}</p>
         
@@ -113,15 +116,6 @@
                         </ul>
                         {% endif %}
                     {% endfor %}
-                </div>
-                <div class="checkbox-container">
-                    <label for="agree-checkbox-text">
-                        <input type="checkbox" id="agree-checkbox-text" style="width: 20px; height: 20px;" required />
-                    </label>
-                    <label for="agree-checkbox-text">
-                        <span style="color: red; font-weight: bold;">*</span>
-                        <small>{{ additional_data.checkbox_text }}</small>
-                    </label>
                 </div>
                 <button type="submit">{{ additional_data.submit_text }}</button>
             </div>

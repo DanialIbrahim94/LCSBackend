@@ -55,7 +55,6 @@ def submit_form(request, slug):
         form_data = DynamicForm(fields=form.fields.all())
 
     additional_data = {
-        'checkbox_text': form.agreed_text,
         'submit_text': form.submit_text
     }
 

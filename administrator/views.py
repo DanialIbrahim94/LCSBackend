@@ -660,13 +660,13 @@ def download_submissions(request, user_id):
     filename = 'submissions.csv'
 
     # Extract the header row from the first submissions item
-    header = list(submissions[0]['answers'].values())
+    header = ({'text': 'Submission Date'}, *list(submissions[0]['answers'].values()))
     header = [item['text'] for item in header]
 
     # Extract the submissions rows from all submissions items
     rows = []
     for item in submissions:
-        row = list(item['answers'].values())
+        row = ({'answer': item['created_at']}, *list(item['answers'].values()))
         row = [item.get('answer', '') for item in row]
         rows.append(row)
 
