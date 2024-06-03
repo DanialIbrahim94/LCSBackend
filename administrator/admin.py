@@ -1,6 +1,7 @@
 import csv
 
 from django import forms
+from django.db import transaction
 from django.contrib import admin
 from django.core.validators import FileExtensionValidator
 from django.contrib.auth import get_user_model
@@ -26,21 +27,22 @@ class CustomFooForm(forms.ModelForm):
 		# Add custom logic here to modify the instance as needed
 		bulk_coupons = self.cleaned_data['bulk_coupons']  # Example
 		reader = csv.reader(bulk_coupons.read().decode('utf-8').splitlines())
+		coupon_codes = [row[0] for row in reader]
+
+		# Create a Coupons instance for the first coupon code
+		first_coupon_code = coupon_codes.pop(0)
+		instance = Coupons(code=first_coupon_code, user=user)
+
+		# Create Coupons instances for the remaining coupon codes
 		created_coupons = []
-		for index, row in enumerate(reader):
-			coupon_code = row[0]
-			if index == 0:
-				instance = Coupons(code=coupon_code, user=user)
-				continue
+		for coupon_code in coupon_codes:
+			created_coupons.append(Coupons(code=coupon_code, user=user))
 
-			# Create a Coupons instance for each row in the file
-			coupon, created = Coupons.objects.get_or_create(code=coupon_code)
-			if created:
-				coupon.user = user
-				coupon.save()
-			created_coupons.append(coupon)
+		# Bulk create all Coupons instances
+		with transaction.atomic():
+			Coupons.objects.bulk_create([instance] + created_coupons)
 
-		return created_coupons[0]
+		return instance
 
 
 @admin.register(Coupons)
