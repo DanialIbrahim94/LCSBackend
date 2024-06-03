@@ -8,6 +8,7 @@ from rest_framework import viewsets
 from .models import Form, Field, Submission
 from .serializers import FormSerializer, FieldSerializer, SubmissionSerializer
 from .forms import DynamicForm
+from administrator.apis import WooCommerceAPI
 
 
 class FormViewSet(viewsets.ReadOnlyModelViewSet):
@@ -34,6 +35,7 @@ class SubmissionViewSet(viewsets.ReadOnlyModelViewSet):
 
 def submit_form(request, slug):
     form = get_object_or_404(Form, slug=slug)
+    error_msg = ''
 
     if request.method == 'POST':
         form_data = DynamicForm(request.POST, fields=form.fields.all())
@@ -49,13 +51,19 @@ def submit_form(request, slug):
                 submission.send_verification_email()
                 return redirect(reverse('verify_email', kwargs={'submission_id': submission.id}))
             else:
-                submission.send_coupon()
-                return redirect('success')
+                api = WooCommerceAPI()
+                response = api.redeem_coupon(submission)
+                print(response)
+                if response.get('success'):
+                    return redirect(response.get('redirect_url', '.'))
+                else:
+                    error_msg = response.get('error', 'Failed to create order, please try again later or contact us for additional support!')
     else:
         form_data = DynamicForm(fields=form.fields.all())
 
     additional_data = {
-        'submit_text': form.submit_text
+        'submit_text': form.submit_text,
+        'error_msg': error_msg
     }
 
     return render(
@@ -81,8 +89,12 @@ def verify_email(request, submission_id):
                 submission.is_verified = True
                 submission.verification_code = None
                 submission.save()
-                submission.send_coupon()
-                return redirect('success')
+                api = WooCommerceAPI()
+                response = api.redeem_coupon(submission)
+                if response.get('success'):
+                    return redirect(response.get('redirect_url', '.'))
+                else:
+                    pass
             else:
                 return render(request, 'forms/email_verification.html', {'error': 'Invalid verification code'})
         else:

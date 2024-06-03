@@ -95,6 +95,8 @@
         <img src="{% static 'img/logo.png' %}" style="margin-bottom: 20px;">
         <h1>{{ form.name | safe }}</h1>
         <p style="display: grid; margin-bottom: 20px;">{{ form.description | safe }}</p>
+
+        <p style="color: red;">{{ additional_data.error_msg }}</p>
         
         <form method="post">
             <div class="form-container">
