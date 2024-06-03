@@ -25,6 +25,70 @@ class WooCommerceAPI():
 			wp_api = True
 		)
 
+	def redeem_coupon(self, submission):
+		# Extract user information from the submission data
+		data = submission.data
+		email = submission._get_email()
+		if len(submission._get_field('name', '').split(' ')) >= 2:
+			first_name = submission._get_field('name', '').split(' ')[0]
+			last_name = ' '.join(submission._get_field('name', '').split(' ')[1:])
+		else:
+			first_name = submission._get_field('name', '')
+			last_name = ''
+		country = submission._get_field('country', '')
+		city = submission._get_field('city', '')
+		state = submission._get_field('state', '')
+		phone = submission._get_field('phone', '')
+		birthday = submission._get_field('birthday', '')
+
+		# Create a dummy user object for the purpose of order creation
+		user_data = {
+			'first_name': first_name,
+			'last_name': last_name,
+			'email': email,
+			'country': country,
+			'city': city,
+			'state': state,
+			'phone': phone,
+			'birthday': birthday,
+		}
+
+		amount = 1
+		coupon_code = submission.get_coupon()
+
+		# Create an order using the extracted user data
+		order_response = self.order(user_data, amount)
+
+		if order_response.ok:
+			order_data = order_response.json()
+			order_id = order_data['id']
+
+			# Apply the coupon to the order
+			coupon_response = self.apply_coupon_to_order(order_id, coupon_code)
+
+			if coupon_response.ok:
+				# Get the redirect URL
+				redirect_url = f"{settings.WOOCOMMERCE_URL}/checkout-2/order-pay/{order_id}/?pay_for_order=true&key={order_data['order_key']}"
+				print(redirect_url)
+				return {"success": True, "coupon": coupon_code, "redirect_url": redirect_url}
+			else:
+				# Handle error in applying coupon
+				return {"success": False, "error": "Failed to apply coupon.", "details": coupon_response.json()}
+		else:
+			# Handle error in creating order
+			return {"success": False, "error": "Failed to create order, please try again later or contact us for additional support!", "details": order_response.json()}
+
+	def apply_coupon_to_order(self, order_id, coupon_code):
+		data = {
+			"coupon_lines": [
+				{
+					"code": coupon_code
+				}
+			]
+		}
+		response = self.api.put(f'orders/{order_id}', data)
+		return response
+
 	def get(self, request, params={}):
 		response = self.api.get(request, params=params)
 		return response
@@ -43,8 +107,8 @@ class WooCommerceAPI():
 
 		return filtered_orders
 
-	def get_customer(self, user):
-		email = user.email
+	def get_customer(self, user, email=None):
+		email = email or user.email
 		customer = None
 		response = self.get('customers', params={'search': email})
 
@@ -58,8 +122,25 @@ class WooCommerceAPI():
 
 		return customer
 
-	def order(self, user, amount):
-		first_name, *last_name = user.fullName.split(' ')
+	def create_customer(self, user_data):
+		data = {
+			"email": user_data.get('email'),
+			"first_name": user_data.get('first_name'),
+			"last_name": user_data.get('last_name'),
+			"billing": {
+				"first_name": user_data.get('first_name'),
+				"last_name": user_data.get('last_name'),
+				"city": user_data.get('city'),
+				"state": user_data.get('state'),
+				"country": user_data.get('country'),
+				"email": user_data.get('email'),
+				"phone": user_data.get('phone')
+			},
+		}
+
+		return self.post("customers", data).json()
+
+	def order(self, user_data, amount):
 		data = {
 			"payment_method": settings.WOOCOMMERCE_PAYMENT_METHOD,
 			"payment_method_title": settings.WOOCOMMERCE_PAYMENT_METHOD_TITLE,
@@ -67,26 +148,32 @@ class WooCommerceAPI():
 			"line_items": [
 				{
 					"product_id": settings.WOOCOMMERCE_PRODUCT_ID,
-					"variation_id": settings.WOOCOMMERCE_PRODUCT_VARIATIONS.get(amount),
-					"quantity": 1
+					"quantity": amount
 				}
 			],
 			"billing": {
-				"first_name": first_name,
-				"last_name": last_name[-1] if last_name else '',
-				"address_1": user.address,
-				"address_2": "",
-				"city": "",
-				"state": "",
-				"postcode": "",
-				"country": "",
-				"email": user.email,
-				"phone": user.phone
+				"first_name": user_data.get('first_name', ''),
+				"last_name": user_data.get('last_name', ''),
+				"address_1": user_data.get('address', ''),
+				"city": user_data.get('city', ''),
+				"state": user_data.get('state', ''),
+				"country": user_data.get('country', ''),
+				"email": user_data.get('email', ''),
+				"phone": user_data.get('phone', '')
 			},
 		}
-		customer = self.get_customer(user)
+		email = user_data.get('email')
+		customer = self.get_customer(None, email=email)
 		if customer and customer.get('id'):
 			data["customer_id"] = customer.get('id')
+
+		# if not customer or not customer.get('id'):
+		# 	print(self.create_customer(user_data))
+		
+		# customer = self.get_customer(None, email=email)
+		# data["customer_id"] = customer.get('id')
+
+		print(data)
 
 		response = self.post('orders', data)
 		return response
@@ -107,8 +194,7 @@ class WooCommerceAPI():
 				return False, {'message': 'The order has not been paid for yet.'}
 
 			user_email = _order['billing']['email']
-			wc_variations = settings.WOOCOMMERCE_PRODUCT_VARIATIONS
-			amount = list(wc_variations.keys())[list(wc_variations.values()).index(_order['line_items'][0]['variation_id'])]
+			amount = 0
 
 			qs = User.objects.filter(email=user_email)
 			if qs.exists():
@@ -413,38 +499,38 @@ class JotformAPI():
 
 				# answers now is like
 				# {
-				#     "Name": "adem",
-				#     "email": "value"
+				#	 "Name": "adem",
+				#	 "email": "value"
 				# }
 				# how to convert it to be like
 
 				# {
-				#     "1": {
-				#         "order": "1",
-				#         "answer": {
-				#             "first": "new",
-				#             "last": "user"
-				#         },
-				#         "prettyFormat": "new user"
-				#     },
-				#     "3": {
-				#         "order": "3",
-				#         "text": "Birth Date",
-				#         "type": "control_datetime",
-				#         "answer": {
-				#             "month": "04",
-				#             "day": "16",
-				#             "year": "2024",
-				#             "datetime": "2024-04-16 00:00:00"
-				#         },
-				#         "prettyFormat": "04-16-2024-2024-04-16 00:00:00"
-				#     },
-				#     "4": {
-				#         "order": "4",
-				#         "text": "Type a question",
-				#         "type": "control_email",
-				#         "answer": "araariadem0@gmail.com"
-				#     }
+				#	 "1": {
+				#		"order": "1",
+				#		"answer": {
+				#		"first": "new",
+				#		"last": "user"
+				#		},
+				#		"prettyFormat": "new user"
+				#	 },
+				#	 "3": {
+				#		"order": "3",
+				#		"text": "Birth Date",
+				#		"type": "control_datetime",
+				#		"answer": {
+				#		"month": "04",
+				#		"day": "16",
+				#		"year": "2024",
+				#		"datetime": "2024-04-16 00:00:00"
+				#		},
+				#		"prettyFormat": "04-16-2024-2024-04-16 00:00:00"
+				#	 },
+				#	 "4": {
+				#		"order": "4",
+				#		"text": "Type a question",
+				#		"type": "control_email",
+				#		"answer": "araariadem0@gmail.com"
+				#	 }
 				# }
 
 				submission_info = {

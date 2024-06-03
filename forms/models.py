@@ -85,6 +85,13 @@ class Submission(models.Model):
 	def _generate_verification_code(self):
 		return ''.join(random.choices(string.digits, k=6))
 
+	def _get_field(self, key, in_case=None):
+		for data_key in self.data:
+			if data_key.lower() == key.lower():
+				return self.data[data_key]
+
+		return in_case
+
 	def _get_email(self):
 		# Iterate through keys to find email field in a case-insensitive way
 		for key in self.data:
@@ -132,3 +139,14 @@ class Submission(models.Model):
 		email = self._get_email()
 		send_coupon_email(user.id, email, coupon.code)
 		coupon.delete()
+
+	def get_coupon(self):
+		user = self.form.user
+		coupon = Coupons.objects.filter(user=user).first()
+		if not coupon:
+			admin_user = User.objects.first()
+			coupon = Coupons.objects.filter(user=admin_user).first()
+
+		code = coupon.code
+		coupon.delete()
+		return code
