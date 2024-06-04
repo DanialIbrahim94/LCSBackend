@@ -57,6 +57,7 @@ def submit_form(request, slug):
                 if response.get('success'):
                     return redirect(response.get('redirect_url', '.'))
                 else:
+                    submission.delete()
                     error_msg = response.get('error', 'Failed to create order, please try again later or contact us for additional support!')
     else:
         form_data = DynamicForm(fields=form.fields.all())
@@ -78,6 +79,8 @@ def verify_email(request, submission_id):
         submission = Submission.all_objects.get(id=submission_id)
     except Submission.DoesNotExist:
         return HttpResponseNotFound('Submission not found')
+
+    error_msg = ''
     
     if submission.form.verify_email:
         if submission.is_verified == True:
@@ -94,9 +97,10 @@ def verify_email(request, submission_id):
                 if response.get('success'):
                     return redirect(response.get('redirect_url', '.'))
                 else:
-                    pass
+                    submission.delete()
+                    error_msg = response.get('error', 'Failed to create order, please try again later or contact us for additional support!')
             else:
-                return render(request, 'forms/email_verification.html', {'error': 'Invalid verification code'})
+                return render(request, 'forms/email_verification.html', {'error': 'Invalid verification code', 'error_msg': error_msg})
         else:
             return render(request, 'forms/email_verification.html')
     else:

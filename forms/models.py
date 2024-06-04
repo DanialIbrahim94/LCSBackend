@@ -20,6 +20,7 @@ class Form(models.Model):
 	name = models.CharField(max_length=250)
 	description = models.TextField()
 	user = models.ForeignKey('administrator.User', related_name='forms', on_delete=models.CASCADE)
+	logo_url = models.URLField(max_length=500, blank=True, null=True)
 	slug = models.SlugField(unique=True, default=uuid.uuid4)
 	verify_email = models.BooleanField(default=False)
 

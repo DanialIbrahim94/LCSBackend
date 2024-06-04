@@ -70,6 +70,7 @@
 <body>
     <div class="container">
         <h1>Email Confirmation</h1>
+        <p style="color: red;">{{ additional_data.error_msg }}</p>
         {% if error %}
         <p class="error">{{ error }}</p>
         {% endif %}

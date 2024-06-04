@@ -506,8 +506,9 @@ def create_jotform(request):
     elements = data.get('formElements')
     welcome = data.get('welcomePage')
     verification_code = data.get('verificationCode')
-
-    form, ok = api.create_form(name, elements, welcome, verification_code, user)
+    logo_url = data.get('logoURL')
+    
+    form, ok = api.create_form(name, elements, welcome, verification_code, logo_url, user)
 
     if ok:
         url = form.get_absolute_url()
@@ -542,7 +543,8 @@ def update_jotform(request, user_id):
     data = request.data
     name = data['formName']
     elements = data['formElements']
-    response, ok = api.update_form(name, elements, user)
+    logo_url = data.get('logoURL')
+    response, ok = api.update_form(name, elements, logo_url, user)
 
     if ok:
         res_data = {

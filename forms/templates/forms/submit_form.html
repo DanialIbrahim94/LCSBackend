@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ form.name | safe }}</title>
+    <title>The $100 Hotel Saver Gift</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap">
     <style>
         body {
@@ -92,7 +92,11 @@
 </head>
 <body>
     <div class="container" style="text-align: center;">
-        <img src="{% static 'img/logo.png' %}" style="margin-bottom: 20px;">
+        {% if form.logo_url %}
+            <img src="{{ form.logo_url }}" style="margin-bottom: 20px;">
+        {% else %}
+            <img src="{% static 'img/logo.png' %}" style="margin-bottom: 20px;">
+        {% endif %}
         <h1>{{ form.name | safe }}</h1>
         <p style="display: grid; margin-bottom: 20px;">{{ form.description | safe }}</p>
 
@@ -118,6 +122,15 @@
                         </ul>
                         {% endif %}
                     {% endfor %}
+                </div>
+                <div class="checkbox-container">
+                    <label for="agree-checkbox-text">
+                        <input type="checkbox" id="agree-checkbox-text" style="width: 20px; height: 20px;" required />
+                    </label>
+                    <label for="agree-checkbox-text">
+                        <span style="color: red; font-weight: bold;">*</span>
+                        <small>I understand that the business who is offering this gift to you will receive a copy of your information.</small>
+                    </label>
                 </div>
                 <button type="submit">{{ additional_data.submit_text }}</button>
             </div>

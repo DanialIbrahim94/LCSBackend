@@ -72,6 +72,7 @@ class WooCommerceAPI():
 				print(redirect_url)
 				return {"success": True, "coupon": coupon_code, "redirect_url": redirect_url}
 			else:
+				self.delete_order(order_id)
 				# Handle error in applying coupon
 				return {"success": False, "error": "Failed to apply coupon.", "details": coupon_response.json()}
 		else:
@@ -222,6 +223,9 @@ class WooCommerceAPI():
 
 		return False
 
+	def delete_order(self, order_id):
+		return self.api.delete(f"orders/{order_id}").json()
+
 
 class LeadsOrderAPI(WooCommerceAPI):
 	product_id = 30183
@@ -346,7 +350,7 @@ class JotformAPI():
 
 		return response.json()['content'].get('welcomePage', None)
 
-	def create_form(self, name, elements, welcome, verification_code, user):
+	def create_form(self, name, elements, welcome, verification_code, logo_url, user):
 		name= "<b style='color: #4a98d2;font-size: 64px;'>The $100</b> Hotel Saver Gift"
 		description = 'You’re about to receive a $100 coupon that you can redeem and use at 1,000,000 worldwide hotels and resorts up to 2-years, once redeemed.\n'\
 			'There is nothing to join, no blackout dates, no travel restrictions, and no timeshare presentations to attend.<br />\n'\
@@ -390,10 +394,11 @@ class JotformAPI():
 			index += 1
 
 		form = Form.objects.create(
+			user=user,
 			name=name,
 			description=description,
-			user=user,
 			verify_email=verification_code,
+			logo_url=logo_url,
 		)
 		for index, question in questions.items():
 			field = Field.objects.create(
@@ -412,7 +417,7 @@ class JotformAPI():
 
 		return form, True
 
-	def update_form(self, name, elements, user):
+	def update_form(self, name, elements, logo_url, user):
 		# build the questions dictionary
 		questions = {}
 		index = 1
@@ -464,6 +469,9 @@ class JotformAPI():
 			index += 1
 
 		form = user.forms.first()
+		form.logo_url = logo_url
+		form.save()
+
 		form.fields.all().delete()
 		for index, question in questions.items():
 			field = Field.objects.create(
