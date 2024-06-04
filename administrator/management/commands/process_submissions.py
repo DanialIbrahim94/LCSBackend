@@ -36,7 +36,7 @@ class Command(BaseCommand):
             fullname = email = None
             for number, answer in answers.items():
                 if answer['type'] == 'control_fullname':
-                    fullname = answer['prettyFormat']
+                    fullname = answer.get('prettyFormat', '')
                 if answer['type'] == 'control_email':
                     email = answer['answer']
 
