@@ -68,7 +68,7 @@ class WooCommerceAPI():
 
 			if coupon_response.ok:
 				# Get the redirect URL
-				redirect_url = f"{settings.WOOCOMMERCE_URL}/checkout-2/order-pay/{order_id}/?pay_for_order=true&key={order_data['order_key']}"
+				redirect_url = f"{settings.WOOCOMMERCE_URL}/checkout/?order-pay=/{order_id}/"
 				print(redirect_url)
 				return {"success": True, "coupon": coupon_code, "redirect_url": redirect_url}
 			else:
