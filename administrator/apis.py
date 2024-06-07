@@ -64,22 +64,22 @@ class WooCommerceAPI():
 			order_data = order_response.json()
 			order_id = order_data['id']
 
-			# Apply the coupon to the order
-			coupon_response = self.apply_coupon_to_order(order_id, coupon_code)
+			if product_id == 1:
+				# Apply the coupon to the order
+				coupon_response = self.apply_coupon_to_order(order_id, coupon_code)
 
-			if coupon_response.ok:
-				if product_id == 1:
+				if coupon_response.ok:
 					self.set_order_status(order_id, 'completed')
 					redirect_url = f"{settings.WOOCOMMERCE_URL}/thank-you/?order_key={order_data['order_key']}"
 					return {"success": True, "coupon": coupon_code, "redirect_url": redirect_url}
 				else:
-					# Get the redirect URL
-					redirect_url = f"{settings.WOOCOMMERCE_URL}/checkout/order-pay/{order_id}/?pay_for_order=true&key={order_data['order_key']}"
-					return {"success": True, "coupon": coupon_code, "redirect_url": redirect_url}
+					self.delete_order(order_id)
+					# Handle error in applying coupon
+					return {"success": False, "error": "Failed to apply coupon.", "details": coupon_response.json()}
 			else:
-				self.delete_order(order_id)
-				# Handle error in applying coupon
-				return {"success": False, "error": "Failed to apply coupon.", "details": coupon_response.json()}
+				# Get the redirect URL
+				redirect_url = f"{settings.WOOCOMMERCE_URL}/checkout/order-pay/{order_id}/?pay_for_order=true&key={order_data['order_key']}"
+				return {"success": True, "coupon": coupon_code, "redirect_url": redirect_url}
 		else:
 			# Handle error in creating order
 			return {"success": False, "error": "Failed to create order, please try again later or contact us for additional support!", "details": order_response.json()}
@@ -153,7 +153,7 @@ class WooCommerceAPI():
 			"set_paid": False,
 			"line_items": [
 				{
-					"product_id": [settings.WOOCOMMERCE_PRODUCT_ID, 614, 610][int(product_id)-1],
+					"product_id": [settings.WOOCOMMERCE_PRODUCT_ID, 614, 610][product_id-1],
 					"quantity": amount
 				}
 			],
