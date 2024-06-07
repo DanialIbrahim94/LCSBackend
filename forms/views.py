@@ -111,7 +111,7 @@ def home(request, submission_id):
         return HttpResponseNotFound('Submission not found')
 
     if request.method == 'POST':
-        product_id = request.POST.get('product_id')
+        product_id = int(request.POST.get('product_id'))
 
         return handle_order_creation(submission, product_id, request)
 
