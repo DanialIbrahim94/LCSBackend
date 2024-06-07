@@ -61,6 +61,7 @@ urlpatterns = [
     path('jotform/<int:user_id>/submissions/download/', views.download_submissions),
     path('submit/<slug:slug>/', forms_views.submit_form, name='submission-form'),
     path('verify-email/<int:submission_id>/', forms_views.verify_email, name='verify_email'),
+    path('home/<int:submission_id>/', forms_views.home, name='home'),
     path('success/', forms_views.success, name='success'),
     path('leads/order/', views.order_leads),
     re_path(r'^lead-orders/(?P<user_id>[0-9]+)$', views.user_lead_orders),

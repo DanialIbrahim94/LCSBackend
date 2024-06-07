@@ -11,6 +11,16 @@ from .forms import DynamicForm
 from administrator.apis import WooCommerceAPI
 
 
+def handle_order_creation(submission, product_id, request):
+    api = WooCommerceAPI()
+    response = api.redeem_coupon(submission, product_id)
+    if response.get('success'):
+        return redirect(response.get('redirect_url', '.'))
+    else:
+        error_msg = response.get('error', 'Failed to create order, please try again later or contact us for additional support!')
+        return render(request, 'forms/home.html', {'error_msg': error_msg})
+
+
 class FormViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Form.objects.all()
     serializer_class = FormSerializer
@@ -51,14 +61,7 @@ def submit_form(request, slug):
                 submission.send_verification_email()
                 return redirect(reverse('verify_email', kwargs={'submission_id': submission.id}))
             else:
-                api = WooCommerceAPI()
-                response = api.redeem_coupon(submission)
-                print(response)
-                if response.get('success'):
-                    return redirect(response.get('redirect_url', '.'))
-                else:
-                    submission.delete()
-                    error_msg = response.get('error', 'Failed to create order, please try again later or contact us for additional support!')
+                return redirect(reverse('home', kwargs={'submission_id': submission.id}))
     else:
         form_data = DynamicForm(fields=form.fields.all())
 
@@ -92,19 +95,27 @@ def verify_email(request, submission_id):
                 submission.is_verified = True
                 submission.verification_code = None
                 submission.save()
-                api = WooCommerceAPI()
-                response = api.redeem_coupon(submission)
-                if response.get('success'):
-                    return redirect(response.get('redirect_url', '.'))
-                else:
-                    submission.delete()
-                    error_msg = response.get('error', 'Failed to create order, please try again later or contact us for additional support!')
+                return redirect(reverse('home', kwargs={'submission_id': submission.id}))
             else:
                 return render(request, 'forms/email_verification.html', {'error': 'Invalid verification code', 'error_msg': error_msg})
         else:
             return render(request, 'forms/email_verification.html')
     else:
         return HttpResponseBadRequest('Email verification is not enabled for this form')
+
+
+def home(request, submission_id):
+    try:
+        submission = Submission.all_objects.get(id=submission_id)
+    except Submission.DoesNotExist:
+        return HttpResponseNotFound('Submission not found')
+
+    if request.method == 'POST':
+        product_id = request.POST.get('product_id')
+
+        return handle_order_creation(submission, product_id, request)
+
+    return render(request, 'forms/home.html')
 
 
 def success(request):

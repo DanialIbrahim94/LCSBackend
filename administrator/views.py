@@ -543,8 +543,9 @@ def update_jotform(request, user_id):
     data = request.data
     name = data['formName']
     elements = data['formElements']
-    logo_url = data.get('logoURL')
-    response, ok = api.update_form(name, elements, logo_url, user)
+    logo_file = request.FILES.get('logoFile')
+    print(logo_file)
+    response, ok = api.update_form(name, elements, logo_file, user)
 
     if ok:
         res_data = {

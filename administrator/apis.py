@@ -25,7 +25,8 @@ class WooCommerceAPI():
 			wp_api = True
 		)
 
-	def redeem_coupon(self, submission):
+	def redeem_coupon(self, submission, product_id):
+		print(product_id)
 		# Extract user information from the submission data
 		data = submission.data
 		email = submission._get_email()
@@ -57,7 +58,7 @@ class WooCommerceAPI():
 		coupon_code = submission.get_coupon()
 
 		# Create an order using the extracted user data
-		order_response = self.order(user_data, amount)
+		order_response = self.order(user_data, amount, product_id)
 
 		if order_response.ok:
 			order_data = order_response.json()
@@ -141,14 +142,14 @@ class WooCommerceAPI():
 
 		return self.post("customers", data).json()
 
-	def order(self, user_data, amount):
+	def order(self, user_data, amount, product_id):
 		data = {
 			"payment_method": settings.WOOCOMMERCE_PAYMENT_METHOD,
 			"payment_method_title": settings.WOOCOMMERCE_PAYMENT_METHOD_TITLE,
 			"set_paid": False,
 			"line_items": [
 				{
-					"product_id": settings.WOOCOMMERCE_PRODUCT_ID,
+					"product_id": [settings.WOOCOMMERCE_PRODUCT_ID, 614, 610][product_id-1],
 					"quantity": amount
 				}
 			],
