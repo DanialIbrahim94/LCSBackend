@@ -68,10 +68,14 @@ class WooCommerceAPI():
 			coupon_response = self.apply_coupon_to_order(order_id, coupon_code)
 
 			if coupon_response.ok:
-				# Get the redirect URL
-				redirect_url = f"{settings.WOOCOMMERCE_URL}/checkout/order-pay/{order_id}/?pay_for_order=true&key={order_data['order_key']}"
-				print(redirect_url)
-				return {"success": True, "coupon": coupon_code, "redirect_url": redirect_url}
+				if product_id == 1:
+					self.set_order_status(order_id, 'completed')
+					redirect_url = f"{settings.WOOCOMMERCE_URL}/thank-you/?order_key={order_data['order_key']}"
+					return {"success": True, "coupon": coupon_code, "redirect_url": redirect_url}
+				else:
+					# Get the redirect URL
+					redirect_url = f"{settings.WOOCOMMERCE_URL}/checkout/order-pay/{order_id}/?pay_for_order=true&key={order_data['order_key']}"
+					return {"success": True, "coupon": coupon_code, "redirect_url": redirect_url}
 			else:
 				self.delete_order(order_id)
 				# Handle error in applying coupon
@@ -149,7 +153,7 @@ class WooCommerceAPI():
 			"set_paid": False,
 			"line_items": [
 				{
-					"product_id": [settings.WOOCOMMERCE_PRODUCT_ID, 614, 610][product_id-1],
+					"product_id": [settings.WOOCOMMERCE_PRODUCT_ID, 614, 610][int(product_id)-1],
 					"quantity": amount
 				}
 			],
