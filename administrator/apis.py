@@ -147,6 +147,9 @@ class WooCommerceAPI():
 		return self.post("customers", data).json()
 
 	def order(self, user_data, amount, product_id):
+		country = user_data.get('country', '')
+		res = dict((v,k) for k,v in countries_list.items())
+		country_code = res.get(country) if country and res else ''
 		data = {
 			"payment_method": settings.WOOCOMMERCE_PAYMENT_METHOD,
 			"payment_method_title": settings.WOOCOMMERCE_PAYMENT_METHOD_TITLE,
@@ -163,7 +166,7 @@ class WooCommerceAPI():
 				"address_1": user_data.get('address', ''),
 				"city": user_data.get('city', ''),
 				"state": user_data.get('state', ''),
-				"country": user_data.get('country', ''),
+				"country": country_code,
 				"email": user_data.get('email', ''),
 				"phone": user_data.get('phone', '')
 			},
