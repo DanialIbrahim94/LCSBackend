@@ -360,9 +360,10 @@ class JotformAPI():
 
 	def create_form(self, name, elements, welcome, verification_code, logo_url, user):
 		name= "<b style='color: #4a98d2;font-size: 64px;'>The $100</b> Hotel Saver Gift"
-		description = 'You’re about to receive a $100 coupon that you can redeem and use at 1,000,000 worldwide hotels and resorts up to 2-years, once redeemed.\n'\
-			'There is nothing to join, no blackout dates, no travel restrictions, and no timeshare presentations to attend.<br />\n'\
-			'<b style="margin-bottom: 20px;">NO GIMMICKS, JUST SAVINGS!</b> <br />\n'
+		description = '<span style="margin-bottom: 4px;">You’re about to receive a FREE coupon valued up to $100 in GUARANTEED hotel savings* BELOW the prices listed on Expedia, Priceline and many others.</span> <br />\n'\
+			'<span style="margin-bottom: 4px;">You can use the savings on up to 1,000,000 worldwide hotels and resorts up to 2-years, once redeemed. There is nothing to join, no blackout dates, no travel restrictions, and no timeshare presentations to attend.</span> <br />\n'\
+			'<b style="margin-bottom: 10px;">NO GIMMICKS, JUST SAVINGS!</b> <br />\n'\
+			'The amount of savings will vary based on the time of year, the length of stay, the type of property and any special events going on in the area at the time of booking. <br />\n'
 		questions = {}
 		index = 1
 		for value in elements:
