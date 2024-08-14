@@ -25,7 +25,7 @@ class WooCommerceAPI():
 			wp_api = True
 		)
 
-	def redeem_coupon(self, submission, product_id):
+	def redeem_coupon(self, submission, product_id, referral_id=None):
 		print(product_id)
 		# Extract user information from the submission data
 		data = submission.data
@@ -70,7 +70,7 @@ class WooCommerceAPI():
 
 				if coupon_response.ok:
 					self.set_order_status(order_id, 'completed')
-					redirect_url = f"{settings.WOOCOMMERCE_URL}/thank-you/?order_key={order_data['order_key']}"
+					redirect_url = f"{settings.WOOCOMMERCE_URL}/thank-you/?referralID={referral_id}&order_key={order_data['order_key']}"
 					return {"success": True, "coupon": coupon_code, "redirect_url": redirect_url}
 				else:
 					self.delete_order(order_id)
@@ -78,7 +78,7 @@ class WooCommerceAPI():
 					return {"success": False, "error": "Failed to apply coupon.", "details": coupon_response.json()}
 			else:
 				# Get the redirect URL
-				redirect_url = f"{settings.WOOCOMMERCE_URL}/checkout/order-pay/{order_id}/?pay_for_order=true&key={order_data['order_key']}"
+				redirect_url = f"{settings.WOOCOMMERCE_URL}/checkout/order-pay/{order_id}/?referralID={referral_id}&pay_for_order=true&key={order_data['order_key']}"
 				return {"success": True, "coupon": coupon_code, "redirect_url": redirect_url}
 		else:
 			# Handle error in creating order
@@ -598,6 +598,7 @@ class JotformAPI():
 			'id': form_slug,
 			'name': form.name,
 			'questions': form_questions,
-			'welcome_page': welcome_page
+			'welcome_page': welcome_page,
+			'referral_id': form.user.referral_id if hasattr(form, 'user') else None
 		}
 		return form_data, True

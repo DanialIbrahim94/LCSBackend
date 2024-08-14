@@ -510,6 +510,11 @@ def create_jotform(request):
     
     form, ok = api.create_form(name, elements, welcome, verification_code, logo_url, user)
 
+    referral_id = data.get('referralId', None)
+    print(referral_id)
+    user.referral_id = referral_id
+    user.save()
+
     if ok:
         url = form.get_absolute_url()
 
@@ -544,8 +549,12 @@ def update_jotform(request, user_id):
     name = data['formName']
     elements = data['formElements']
     logo_file = request.FILES.get('logoFile')
-    print(logo_file)
     response, ok = api.update_form(name, elements, logo_file, user)
+
+    referral_id = data.get('referralId', None)
+    print(referral_id)
+    user.referral_id = referral_id
+    user.save()
 
     if ok:
         res_data = {

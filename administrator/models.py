@@ -32,6 +32,7 @@ class User(models.Model):
 	business = models.ForeignKey(Business, on_delete=models.CASCADE, null=True)
 	jotform_id = models.TextField(max_length=30, null=True, default=None)
 	leads_count = models.IntegerField(null=True, default=0)
+	referral_id = models.CharField(max_length=200, blank=True, null=True)
 	
 	def __str__(self):
 		return self.email

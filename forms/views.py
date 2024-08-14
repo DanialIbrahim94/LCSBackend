@@ -13,7 +13,11 @@ from administrator.apis import WooCommerceAPI
 
 def handle_order_creation(submission, product_id, request):
     api = WooCommerceAPI()
-    response = api.redeem_coupon(submission, product_id)
+    referral_id = None
+    if submission and hasattr(submission, 'form') and hasattr(submission.form, 'user'):
+        referral_id = submission.form.user.referral_id
+
+    response = api.redeem_coupon(submission, product_id, referral_id)
     if response.get('success'):
         return redirect(response.get('redirect_url', '.'))
     else:
