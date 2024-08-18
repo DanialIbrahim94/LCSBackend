@@ -70,7 +70,7 @@ class WooCommerceAPI():
 
 				if coupon_response.ok:
 					self.set_order_status(order_id, 'completed')
-					redirect_url = f"{settings.WOOCOMMERCE_URL}/thank-you/?referralID={referral_id}&order_key={order_data['order_key']}"
+					redirect_url = f"{settings.WOOCOMMERCE_URL}/thank-you/#{referral_id}/?order_key={order_data['order_key']}"
 					return {"success": True, "coupon": coupon_code, "redirect_url": redirect_url}
 				else:
 					self.delete_order(order_id)
